@@ -1,51 +1,67 @@
-# ast-tennis-app
+# AstTennisApp app
 
-## Guía de uso de Pipenv
+## Run the app
 
-### 1. Ubicarse en el folder del proyecto
+### Poetry
 
-Antes de ejecutar algun comando ir a la ruta del proyecto por ejemplo **/ast-tennis-app**
+Install dependencies from `pyproject.toml`:
 
-### 2. Instalación de Pipenv
-
-Si aún no tienes Pipenv instalado, ejecuta:
-
-```bash
-pip install pipenv
+```
+poetry install
 ```
 
-### 3. Instalación de Dependencias
+Run as a desktop app:
 
-En la raíz del proyecto, instala todas las dependencias definidas en el Pipfile ejecutando:
-
-```bash
-pipenv install
+```
+poetry run flet run
 ```
 
-Este comando creará el entorno virtual e instalará todas las dependencias.
+Run as a web app:
 
-### 4. Activación del Entorno Virtual
-
-Para activar el entorno virtual y trabajar dentro de él, ejecuta:
-
-```bash
-pipenv shell
+```
+poetry run flet run --web
 ```
 
-### 5. Ejecución de la Aplicación
+For more details on running the app, refer to the [Getting Started Guide](https://flet.dev/docs/getting-started/).
 
-Una vez dentro del entorno virtual, puedes ejecutar la aplicación o cualquier script, por ejemplo:
+## Build the app
 
-```bash
-python main.py
+### Android
+
+```
+flet build apk -v
 ```
 
-### 6. Instalación de una Nueva Dependencia
+For more details on building and signing `.apk` or `.aab`, refer to the [Android Packaging Guide](https://flet.dev/docs/publish/android/).
 
-Si necesitas agregar una nueva dependencia al proyecto, utiliza el siguiente comando (reemplazando **nombre_del_paquete** por el nombre de la dependencia):
+### iOS
 
-```bash
-pipenv install nombre_del_paquete
+```
+flet build ipa -v
 ```
 
-Este comando actualizará automáticamente el Pipfile y generará o actualizará el Pipfile.lock. Asegúrate de hacer commit de estos archivos para que el resto del equipo disponga de la configuración actualizada.
+For more details on building and signing `.ipa`, refer to the [iOS Packaging Guide](https://flet.dev/docs/publish/ios/).
+
+### macOS
+
+```
+flet build macos -v
+```
+
+For more details on building macOS package, refer to the [macOS Packaging Guide](https://flet.dev/docs/publish/macos/).
+
+### Linux
+
+```
+flet build linux -v
+```
+
+For more details on building Linux package, refer to the [Linux Packaging Guide](https://flet.dev/docs/publish/linux/).
+
+### Windows
+
+```
+flet build windows -v
+```
+
+For more details on building Windows package, refer to the [Windows Packaging Guide](https://flet.dev/docs/publish/windows/).
