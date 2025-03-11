@@ -14,6 +14,10 @@ class MainController:
         
     def go_to_registration(self):
         self.page.clean()
+        self.page.bgcolor= ft.colors.BLACK
+        self.page.vertical_alignment="center"
+        self.page.horizontal_alignment= "center"
+        
         registration_view = RegistrationView(self)
         self.page.add(registration_view.view)
         self.page.update()
