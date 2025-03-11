@@ -55,7 +55,7 @@ class RegistrationView:
                         text="Volver",
                         width=280,
                         bgcolor="black",
-                        on_click=self.on_registration_click
+                        on_click=self.on_back
                         
                     ),padding=ft.padding.only(20,20)
                 ),
