@@ -1,18 +1,14 @@
 import flet as ft
-from controllers.registration_controller import RegistrationController
 
-class RegistrationView:
+class LoginView:
     def __init__(self, controller):
         self.controller = controller
-        # Inicializamos el controlador específico para el registro
-        self.reg_controller = RegistrationController(self)
-        
         
         container = ft.Container(
             ft.Column([
                 ft.Container(
                     ft.Text(
-                        "Registro",
+                        "Iniciar sesión",
                         width=320,
                         size=30,
                         text_align="center",
@@ -43,7 +39,7 @@ class RegistrationView:
                 ),
                 ft.Container(
                     ft.ElevatedButton(
-                        text="Registrase",
+                        text="Iniciar sesión",
                         width=280,
                         bgcolor="black"
                         
@@ -55,7 +51,7 @@ class RegistrationView:
                         text="Volver",
                         width=280,
                         bgcolor="black",
-                        on_click=self.on_back_click
+                        on_click=self.on_registration_click
                         
                     ),padding=ft.padding.only(20,20)
                 ),
@@ -71,18 +67,16 @@ class RegistrationView:
             ])
         )
         
-        # Definición de los campos de entrada
-        
-        # Botón para enviar el registro
-        self.btn_register = ft.ElevatedButton(
-            "Registrar",
-            on_click=self.reg_controller.register
+        # Botón para navegar a la pantalla de registro
+        self.btn_registration = ft.ElevatedButton(
+            "Ir a Registro",
+            on_click=self.on_registration_click
         )
-        
-        # Botón para volver al menú principal
-        self.btn_back = ft.TextButton("Volver al Menú", on_click=self.on_back_click)
         
         self.view = container
         
+    def on_registration_click(self, e):
+        self.controller.go_to_registration()
+
     def on_back_click(self, e):
-        self.controller.show_main_menu()
+        self.controller.go_to_main_menu()

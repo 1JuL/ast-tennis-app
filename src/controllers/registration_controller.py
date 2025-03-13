@@ -1,4 +1,5 @@
 import flet as ft
+from views.main_view import MainView
 
 class RegistrationController:
     def __init__(self, view):
@@ -18,14 +19,11 @@ class RegistrationController:
         self.show_dialog("¡Registro exitoso!")
         
     def show_dialog(self, message):
-        # Se obtiene la referencia a la página desde el controlador principal
-        page = self.view.controller.page
+        page = self.view.controller.page  # ✅ Se obtiene correctamente la referencia a la página
         dlg = ft.AlertDialog(
             title=ft.Text("Información"),
             content=ft.Text(message),
-            actions=[
-                ft.TextButton("OK", on_click=lambda e: self.close_dialog(e, dlg))
-            ]
+            actions=[ft.TextButton("OK", on_click=lambda e: self.close_dialog(e, dlg))]
         )
         page.dialog = dlg
         dlg.open = True
@@ -34,3 +32,4 @@ class RegistrationController:
     def close_dialog(self, e, dialog):
         dialog.open = False
         self.view.controller.page.update()
+

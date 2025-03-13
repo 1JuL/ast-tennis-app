@@ -3,77 +3,75 @@ import flet as ft
 class MainView:
     def __init__(self, controller):
         self.controller = controller
-        
-        container = ft.Container(
-            ft.Column([
-                ft.Container(
-                    ft.Text(
-                        "Iniciar sesión",
-                        width=320,
-                        size=30,
-                        text_align="center",
-                        weight="w900"),
-                    padding=ft.padding.only(20,20)
-                ),
-                ft.Container(
-                    ft.TextField(
-                       width=280,
-                       height=40,
-                       hint_text="Correo electrónico",
-                       border="underline",
-                       color="black",
-                       prefix_icon=ft.icons.EMAIL
-                    ),padding=ft.padding.only(20,20)
-                ),
-                ft.Container(
-                    ft.TextField(
-                       width=280,
-                       height=40,
-                       hint_text="Contraseña",
-                       border="underline",
-                       color="black",
-                       password=True,
-                       can_reveal_password=True,
-                       prefix_icon=ft.icons.LOCK
-                    ),padding=ft.padding.only(20,20)
-                ),
-                ft.Container(
-                    ft.ElevatedButton(
-                        text="Iniciar sesión",
-                        width=280,
-                        bgcolor="black"
-                        
-                    ),padding=ft.padding.only(20,20)
-                    
-                ),
-                ft.Container(
-                    ft.ElevatedButton(
-                        text="Volver",
-                        width=280,
-                        bgcolor="black",
-                        on_click=self.on_registration_click
-                        
-                    ),padding=ft.padding.only(20,20)
-                ),
-                
-            ],alignment=ft.MainAxisAlignment.SPACE_EVENLY),
-            
-            border_radius=20,
-            width=320,
-            height=500,
-            gradient= ft.LinearGradient([ft.colors.PURPLE,
-                ft.colors.PINK,
-                ft.colors.RED
-            ])
+
+        self.view = ft.Container(
+            content=ft.Row(
+                [
+                    # Imagen grande a la izquierda
+                    ft.Container(
+                        content=ft.Image(
+                            src="https://picsum.photos/600",
+                            width=600,
+                            height=600
+                        ),
+                        expand=True
+                    ),
+
+                    # Controles de login/registro a la derecha
+                    ft.Container(
+                        content=ft.Column(
+                            [
+                                ft.Image(
+                                    src="https://picsum.photos/200",
+                                    width=200,
+                                    height=200
+                                ),
+                                ft.Text(
+                                    "Bienvenido a AST Tennis. Por favor seleccione una opción.",
+                                    size=16,
+                                    text_align=ft.TextAlign.CENTER
+                                ),
+                                ft.ElevatedButton(
+                                    text="Iniciar sesión",
+                                    width=250,
+                                    on_click=self.on_login_click
+                                ),
+                                ft.ElevatedButton(
+                                    text="Registrarse",
+                                    width=250,
+                                    on_click=self.on_registration_click
+                                ),
+                                ft.ElevatedButton(
+                                    text="Salir",
+                                    width=250,
+                                    on_click=lambda _: self.on_exit_click
+                                )
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            horizontal_alignment=ft.CrossAxisAlignment.CENTER
+                        ),
+                        expand=True
+                    )
+                ],
+                alignment=ft.MainAxisAlignment.CENTER
+            ),
+            width=800,
+            expand=True,
+            gradient=ft.LinearGradient(
+                colors=[ft.colors.BLUE_50, ft.colors.BLUE_200, ft.colors.BLUE_400],
+                begin=ft.alignment.top_left,
+                end=ft.alignment.bottom_right,
+            ),
         )
-        
-        # Botón para navegar a la pantalla de registro
-        self.btn_registration = ft.ElevatedButton(
-            "Ir a Registro",
-            on_click=self.on_registration_click
-        )
-        
-        self.view = container
-        
+
     def on_registration_click(self, e):
         self.controller.go_to_registration()
+
+    def on_login_click(self, e):
+        self.controller.go_to_login()
+    
+    def on_exit_click(self, e):
+        self.controller.page.window_close()
+
+
+    
