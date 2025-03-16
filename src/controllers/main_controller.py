@@ -25,7 +25,7 @@ class MainController:
         self.page.update()
         
     def go_to_registration(self):
-        self.page.bgcolor= ft.colors.BLACK
+        self.page.bgcolor= ft.Colors.BLACK
         self.page.vertical_alignment="center"
         self.page.horizontal_alignment= "center"
         

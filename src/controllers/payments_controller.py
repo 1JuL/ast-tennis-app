@@ -23,9 +23,9 @@ class PaymentsController:
                     
                 ),
                 padding=10,
-                bgcolor= ft.colors.BLACK,
+                bgcolor= ft.Colors.BLACK,
                 border_radius=10,
-                shadow=ft.BoxShadow(blur_radius=5, color=ft.colors.BLACK12),
+                shadow=ft.BoxShadow(blur_radius=5, color=ft.Colors.BLACK12),
                 border=ft.border.all(2,ft.Colors.AMBER_500 if pago.estado == 'Pendiente' else ft.Colors.GREEN_500),
             ),
             elevation=2,

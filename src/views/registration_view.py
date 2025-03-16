@@ -26,7 +26,7 @@ class RegistrationView:
                        hint_text="Correo electrónico",
                        border="underline",
                        color="black",
-                       prefix_icon=ft.icons.EMAIL
+                       prefix_icon=ft.Icons.EMAIL
                     ),padding=ft.padding.only(20,20)
                 ),
                 ft.Container(
@@ -38,7 +38,7 @@ class RegistrationView:
                        color="black",
                        password=True,
                        can_reveal_password=True,
-                       prefix_icon=ft.icons.LOCK
+                       prefix_icon=ft.Icons.LOCK
                     ),padding=ft.padding.only(20,20)
                 ),
                 ft.Container(
