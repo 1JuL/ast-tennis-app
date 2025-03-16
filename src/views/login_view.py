@@ -61,9 +61,9 @@ class LoginView:
             border_radius=20,
             width=320,
             height=500,
-            gradient= ft.LinearGradient([ft.colors.PURPLE,
-                ft.colors.PINK,
-                ft.colors.RED
+            gradient= ft.LinearGradient([ft.Colors.PURPLE,
+                ft.Colors.PINK,
+                ft.Colors.RED
             ])
         )
         

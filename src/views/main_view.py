@@ -10,7 +10,7 @@ class MainView:
                     # Imagen grande a la izquierda
                     ft.Container(
                         content=ft.Image(
-                            src="https://picsum.photos/600",
+                            src="src\\assets\\ast-tennis-logo.png",
                             width=600,
                             height=600
                         ),
@@ -21,11 +21,6 @@ class MainView:
                     ft.Container(
                         content=ft.Column(
                             [
-                                ft.Image(
-                                    src="https://picsum.photos/200",
-                                    width=200,
-                                    height=200
-                                ),
                                 ft.Text(
                                     "Bienvenido a AST Tennis. Por favor seleccione una opción.",
                                     size=16,
@@ -58,7 +53,7 @@ class MainView:
             width=800,
             expand=True,
             gradient=ft.LinearGradient(
-                colors=[ft.colors.BLUE_50, ft.colors.BLUE_200, ft.colors.BLUE_400],
+                colors=[ft.Colors.BLUE_50, ft.Colors.BLUE_200, ft.Colors.BLUE_400],
                 begin=ft.alignment.top_left,
                 end=ft.alignment.bottom_right,
             ),

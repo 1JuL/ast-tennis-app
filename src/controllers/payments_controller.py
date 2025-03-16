@@ -12,11 +12,11 @@ class PaymentsController:
             content=ft.Container(
                 content=ft.Column(
                     [
-                        ft.Text(f"ID: {pago.ID}", weight=ft.FontWeight.BOLD, color=ft.colors),
+                        ft.Text(f"ID: {pago.ID}", weight=ft.FontWeight.BOLD, color=ft.Colors),
                         ft.Text(f"ID Persona: {pago.personaId}"),
                         ft.Text(f"Monto: ${pago.monto:.2f}"),
                         ft.Text(f"Fecha: {pago.fecha}"),
-                        ft.Text(f"Estado: {pago.estado}", color= ft.colors.AMBER_500 if pago.estado == 'Pendiente' else ft.colors.GREEN_500)
+                        ft.Text(f"Estado: {pago.estado}", color= ft.Colors.AMBER_500 if pago.estado == 'Pendiente' else ft.Colors.GREEN_500)
                         
                     ],
                     spacing=5,
@@ -26,7 +26,7 @@ class PaymentsController:
                 bgcolor= ft.colors.BLACK,
                 border_radius=10,
                 shadow=ft.BoxShadow(blur_radius=5, color=ft.colors.BLACK12),
-                border=ft.border.all(2,ft.colors.AMBER_500 if pago.estado == 'Pendiente' else ft.colors.GREEN_500),
+                border=ft.border.all(2,ft.Colors.AMBER_500 if pago.estado == 'Pendiente' else ft.Colors.GREEN_500),
             ),
             elevation=2,
             height= 30
