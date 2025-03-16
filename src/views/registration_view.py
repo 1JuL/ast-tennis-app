@@ -9,115 +9,68 @@ class RegistrationView:
         
         
         container = ft.Container(
-        content=ft.Column(
-            [
+            ft.Column([
                 ft.Container(
                     ft.Text(
                         "Registro",
+                        width=320,
                         size=30,
                         text_align="center",
-                        weight="w900"
-                    ),
-                    padding=ft.padding.only(20, 20),
-                    alignment=ft.alignment.center
+                        weight="w900"),
+                    padding=ft.padding.only(20,20)
                 ),
-                
-                # Sección desplazable
                 ft.Container(
-                    content=ft.Column(
-                        [
-                            ft.TextField(
-                                width=280,
-                                height=40,
-                                hint_text="Nombre",
-                                border="underline",
-                                color="black",
-                                prefix_icon=ft.icons.PERSON
-                            ),
-                            ft.TextField(
-                                width=280,
-                                height=40,
-                                hint_text="Apellidos",
-                                border="underline",
-                                color="black",
-                                prefix_icon=ft.icons.PERSON
-                            ),
-                            ft.TextField(
-                                width=280,
-                                height=40,
-                                hint_text="Fecha de nacimiento",
-                                border="underline",
-                                color="black",
-                                prefix_icon=ft.icons.CALENDAR_MONTH
-                            ),
-                            ft.TextField(
-                                width=280,
-                                height=40,
-                                hint_text="Teléfono",
-                                border="underline",
-                                color="black",
-                                prefix_icon=ft.icons.PHONE
-                            ),
-                            ft.TextField(
-                                width=280,
-                                height=40,
-                                hint_text="Dirección",
-                                border="underline",
-                                color="black",
-                                prefix_icon=ft.icons.HOME
-                            ),
-                            ft.TextField(
-                                width=280,
-                                height=40,
-                                hint_text="Correo electrónico",
-                                border="underline",
-                                color="black",
-                                prefix_icon=ft.icons.EMAIL
-                            ),
-                            ft.TextField(
-                                width=280,
-                                height=40,
-                                hint_text="Contraseña",
-                                border="underline",
-                                color="black",
-                                password=True,
-                                can_reveal_password=True,
-                                prefix_icon=ft.icons.LOCK
-                            ),
-                        ],
-                        spacing=10,
-                        scroll=ft.ScrollMode.ALWAYS  # Permite hacer scroll si hay más contenido
-                    ),
-                    height=300,  # Limita el tamaño del área desplazable
+                    ft.TextField(
+                       width=280,
+                       height=40,
+                       hint_text="Correo electrónico",
+                       border="underline",
+                       color="black",
+                       prefix_icon=ft.icons.EMAIL
+                    ),padding=ft.padding.only(20,20)
                 ),
-
+                ft.Container(
+                    ft.TextField(
+                       width=280,
+                       height=40,
+                       hint_text="Contraseña",
+                       border="underline",
+                       color="black",
+                       password=True,
+                       can_reveal_password=True,
+                       prefix_icon=ft.icons.LOCK
+                    ),padding=ft.padding.only(20,20)
+                ),
                 ft.Container(
                     ft.ElevatedButton(
-                        text="Registrarse",
+                        text="Registrase",
                         width=280,
                         bgcolor="black"
-                    ),
-                    padding=ft.padding.only(20, 10)
+                        
+                    ),padding=ft.padding.only(20,20)
+                    
                 ),
                 ft.Container(
                     ft.ElevatedButton(
                         text="Volver",
                         width=280,
                         bgcolor="black",
-                    ),
-                    padding=ft.padding.only(20, 10)
+                        on_click=self.on_back_click
+                        
+                    ),padding=ft.padding.only(20,20)
                 ),
-            ],
-            alignment=ft.MainAxisAlignment.SPACE_EVENLY,
-        ),
-        border_radius=20,
-        width=320,
-        height=500,
-        gradient=ft.LinearGradient(
-            [ft.colors.PURPLE, ft.colors.PINK, ft.colors.RED]
-        ),
-        padding=ft.padding.all(10)
-    )
+                
+            ],alignment=ft.MainAxisAlignment.SPACE_EVENLY),
+            
+            border_radius=20,
+            width=320,
+            height=500,
+            gradient= ft.LinearGradient([ft.colors.PURPLE,
+                ft.colors.PINK,
+                ft.colors.RED
+            ])
+        )
+        
         # Definición de los campos de entrada
         
         # Botón para enviar el registro
