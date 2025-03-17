@@ -33,6 +33,16 @@ class RegistrationView:
                     ft.TextField(
                        width=280,
                        height=40,
+                       hint_text="Confirmar Correo electrónico",
+                       border="underline",
+                       color="black",
+                       prefix_icon=ft.Icons.EMAIL
+                    ),padding=ft.padding.only(20,20)
+                ),
+                ft.Container(
+                    ft.TextField(
+                       width=280,
+                       height=40,
                        hint_text="Contraseña",
                        border="underline",
                        color="black",

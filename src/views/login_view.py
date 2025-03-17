@@ -51,7 +51,7 @@ class LoginView:
                         text="Volver",
                         width=280,
                         bgcolor="black",
-                        on_click=self.on_registration_click
+                        on_click=self.on_back_click
                         
                     ),padding=ft.padding.only(20,20)
                 ),
@@ -67,16 +67,9 @@ class LoginView:
             ])
         )
         
-        # Botón para navegar a la pantalla de registro
-        self.btn_registration = ft.ElevatedButton(
-            "Ir a Registro",
-            on_click=self.on_registration_click
-        )
         
         self.view = container
         
-    def on_registration_click(self, e):
-        self.controller.go_to_registration()
 
     def on_back_click(self, e):
-        self.controller.go_to_main_menu()
+        self.controller.show_main_menu()

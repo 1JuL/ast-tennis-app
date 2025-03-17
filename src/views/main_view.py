@@ -24,7 +24,8 @@ class MainView:
                                 ft.Text(
                                     "Bienvenido a AST Tennis. Por favor seleccione una opción.",
                                     size=16,
-                                    text_align=ft.TextAlign.CENTER
+                                    text_align=ft.TextAlign.CENTER,
+                                    color=ft.Colors.BLACK
                                 ),
                                 ft.ElevatedButton(
                                     text="Iniciar sesión",
