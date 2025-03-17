@@ -1,5 +1,5 @@
-from .views.payments_view import PaymentsView
-from .models.Payment import Payment
+from views.payments_view import PaymentsView
+from models.Payment import Payment
 import flet as ft
 
 class PaymentsController:
