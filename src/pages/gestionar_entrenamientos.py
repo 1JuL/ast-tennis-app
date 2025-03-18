@@ -10,7 +10,6 @@ def gestionar_entrenamientos_view(page: ft.Page):
         nombre_field = ft.TextField(label="Nombre del entrenamiento", hint_text="Ingresa el nombre")
         fecha_field = ft.TextField(label="Fecha del entrenamiento", hint_text="dd/mm/aaaa")
         hora_field = ft.TextField(label="Hora del entrenamiento", hint_text="hh:mm")
-        categoria_field = ft.TextField(label="Categoría", hint_text="Ingresa la categoría")
         profesor_id_field = ft.TextField(label="Profesor ID", hint_text="Ingresa el ID del profesor")
 
         def guardar_entrenamiento(e):
@@ -22,11 +21,11 @@ def gestionar_entrenamientos_view(page: ft.Page):
                     .set_nombre(nombre_field.value)\
                     .set_fecha(fecha)\
                     .set_hora(hora)\
-                    .set_tipo(categoria_field.value)\
+                    .set_tipo(0)\
                     .build()
 
                 event_type = Event_TypeBuilder()\
-                    .set_tipo(categoria_field.value)\
+                    .set_tipo(0)\
                     .set_eventoID(event.ID)\
                     .set_profesorID(profesor_id_field.value)\
                     .build()
@@ -51,7 +50,6 @@ def gestionar_entrenamientos_view(page: ft.Page):
                     nombre_field,
                     fecha_field,
                     hora_field,
-                    categoria_field,
                     profesor_id_field,
                     ft.Row(
                         [
