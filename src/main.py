@@ -1,6 +1,7 @@
 import flet as ft
 from pages.registration import Registration
 from pages.login import Login
+from pages.nav_buttons import nav_buttons
 
 def main(page: ft.Page):
     page.title = "AST Tennis"
@@ -48,6 +49,11 @@ def main(page: ft.Page):
                                     text="Registrarse",
                                     width=250,
                                     on_click=lambda e: go_to_registration()
+                                ),
+                                ft.ElevatedButton(
+                                    text="Nav_buttons",
+                                    width=250,
+                                    on_click=lambda e: go_to_nav_buttons()
                                 ),
                                 ft.ElevatedButton(
                                     text="Salir",
@@ -98,6 +104,19 @@ def main(page: ft.Page):
         # Importamos la vista de registro desde pages/registration.py
         reg_view = Registration(page)
         page.controls = [reg_view]
+        page.update()
+    
+    def go_to_nav_buttons():
+        page.clean()
+        page.bgcolor = ft.Colors.BLACK
+        page.vertical_alignment = "center"
+        page.horizontal_alignment = "center"
+        # Asignamos el callback para volver al menú principal
+        page.on_back = show_main_menu
+
+        # Importamos la vista de registro desde pages/registration.py
+        nav_view = nav_buttons(page, show_main_menu)
+        page.controls = [nav_view]
         page.update()
 
     # Mostrar inicialmente el menú principal
