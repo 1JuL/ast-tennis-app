@@ -1,4 +1,7 @@
 import flet as ft
+from utils.firebase import sign_up  # sign_up retorna el usuario creado o None
+from pages.add_user_info import Add_user_info
+from utils.global_state import auth_state
 
 def registration_view(page: ft.Page):
     # Definición de los campos de entrada
@@ -37,22 +40,23 @@ def registration_view(page: ft.Page):
         prefix_icon=ft.Icons.LOCK
     )
     
-    # Función para mostrar un diálogo de información
-    def show_dialog(message):
+    # Función para mostrar un diálogo de información usando page.open(dlg)
+    def show_dialog(message, on_close=None):
         dlg = ft.AlertDialog(
             title=ft.Text("Información"),
             content=ft.Text(message),
             actions=[
-                ft.TextButton("OK", on_click=lambda e: close_dialog(e, dlg))
+                ft.TextButton("OK", on_click=lambda e: close_dialog(e, dlg, on_close))
             ]
         )
-        page.dialog = dlg
-        dlg.open = True
+        page.open(dlg)  # Abre el diálogo usando el helper method recomendado
         page.update()
     
-    def close_dialog(e, dialog):
+    def close_dialog(e, dialog, on_close=None):
         dialog.open = False
         page.update()
+        if on_close:
+            on_close()
     
     # Función para manejar el registro
     def register(e):
@@ -70,16 +74,30 @@ def registration_view(page: ft.Page):
             show_dialog("Los correos electrónicos no coinciden.")
             return
         
-        # Aquí podrías agregar la lógica para guardar el usuario o llamar a un servicio.
-        show_dialog("¡Registro exitoso!")
+        # Llama a sign_up; éste retorna el usuario creado o None
+        user = sign_up(email, password)
+        if user is not None:
+            # Registro exitoso: actualiza el estado global
+            auth_state.is_authenticated = True
+            auth_state.user = user
+            def on_dialog_close():
+                # Agrega la vista de add_user_info sin pasar email, ya que se obtiene del estado global
+                page.views.append(
+                    ft.View(
+                        route="/add_user_info",
+                        controls=[ Add_user_info(page) ]
+                    )
+                )
+                page.go("/add_user_info")
+            show_dialog("¡Registro exitoso!", on_close=on_dialog_close)
+        else:
+            show_dialog("Error en el registro.")
     
     # Función para volver al menú principal
     def go_back(e):
-        # Se asume que la página tiene un callback on_back asignado por el componente principal
         if hasattr(page, "on_back"):
             page.on_back()
         else:
-            # Por defecto, se limpia la página
             page.clean()
             page.update()
     
@@ -132,8 +150,7 @@ def registration_view(page: ft.Page):
     
     return registration_container
 
-# Exportamos la función con el nombre "registration" para importarla desde main.py
+# Exportamos la función con el alias "registration" para importarla desde main.py
 Registration = registration_view
 
-# Opcional: definir __all__ para dejar claro qué se exporta al usar "from pages.registration import *"
 __all__ = ["registration"]
