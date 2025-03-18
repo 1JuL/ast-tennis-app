@@ -1,6 +1,7 @@
 import flet as ft
 from pages.gestionar_pagos import Gestionar_pagos
 from pages.gestionar_torneos import Gestionar_torneos
+from pages.gestionar_entrenamientos import Gestionar_entrenamientos  # Importa la nueva vista de entrenamientos
 
 def nav_buttons(page: ft.Page, show_main_menu):
     """
@@ -42,6 +43,12 @@ def nav_buttons(page: ft.Page, show_main_menu):
                     width=250,
                     bgcolor=ft.Colors.BLACK,
                     on_click=lambda e: go_to_view(Gestionar_torneos)
+                ),
+                ft.ElevatedButton(
+                    text="Gestionar Entrenamientos",  # Botón para la nueva vista
+                    width=250,
+                    bgcolor=ft.Colors.BLACK,
+                    on_click=lambda e: go_to_view(Gestionar_entrenamientos)  # Llama a la vista de entrenamientos
                 ),
                 ft.Container(
                     ft.ElevatedButton(
