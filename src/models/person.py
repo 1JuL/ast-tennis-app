@@ -11,8 +11,6 @@ class Person:
         self.categoria = builder.categoria
         self.estado = builder.estado
         self.rol = builder.rol
-    
-    
 
 
 class PersonBuilder:

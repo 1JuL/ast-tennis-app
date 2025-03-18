@@ -95,7 +95,7 @@ def main(page: ft.Page):
 
     def go_to_registration():
         page.clean()
-        page.bgcolor = ft.Colors.BLACK
+        page.bgcolor = ft.Colors.WHITE
         page.vertical_alignment = "center"
         page.horizontal_alignment = "center"
         # Asignamos el callback para volver al menú principal
@@ -108,7 +108,7 @@ def main(page: ft.Page):
     
     def go_to_nav_buttons():
         page.clean()
-        page.bgcolor = ft.Colors.BLACK
+        page.bgcolor = ft.Colors.WHITE
         page.vertical_alignment = "center"
         page.horizontal_alignment = "center"
         # Asignamos el callback para volver al menú principal
@@ -122,4 +122,4 @@ def main(page: ft.Page):
     # Mostrar inicialmente el menú principal
     show_main_menu()
 
-ft.app(target=main)
+ft.app(target=main, assets_dir='assets')
