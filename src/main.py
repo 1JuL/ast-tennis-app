@@ -52,7 +52,7 @@ def main(page: ft.Page):
                                 ft.ElevatedButton(
                                     text="Salir",
                                     width=250,
-                                    on_click=lambda e: page.destroy()
+                                    on_click=lambda e: page.window.close()
                                 )
                             ],
                             alignment=ft.MainAxisAlignment.CENTER,
