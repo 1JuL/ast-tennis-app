@@ -1,9 +1,83 @@
 import flet as ft
-from models.event import Event
-from models.event_type import Event_Type
+from models.event import Event, EventBuilder
+from models.event_type import Event_Type, Event_TypeBuilder
+import datetime
 
 def gestionar_torneos_view(page: ft.Page):
-    # --- Creación de la barra de herramientas ---
+
+    def mostrar_crear_torneo(e):
+        nombre_field = ft.TextField(label="Nombre del torneo", hint_text="Ingresa el nombre del torneo")
+        fecha_field = ft.TextField(label="Fecha del torneo", hint_text="dd/mm/aaaa")
+        hora_field = ft.TextField(label="Hora del torneo", hint_text="hh:mm")
+        profesor_id_field = ft.TextField(label="Profesor anfitrión", hint_text="Ingresa el ID del profesor")
+        primer_lugar_field = ft.TextField(label="Primer lugar", hint_text="Ingresa el ID del alumno")
+        segundo_lugar_field = ft.TextField(label="Segundo lugar", hint_text="Ingresa el ID del alumno")
+        tercer_lugar_field = ft.TextField(label="Tercer lugar", hint_text="Ingresa el ID del alumno")
+
+        def guardar_torneo(e):
+            try:
+                fecha = datetime.datetime.strptime(fecha_field.value, '%d/%m/%Y').date()
+                hora = datetime.datetime.strptime(hora_field.value, '%H:%M').time()
+
+                event = EventBuilder()\
+                    .set_nombre(nombre_field.value)\
+                    .set_fecha(fecha)\
+                    .set_hora(hora)\
+                    .set_tipo(1)\
+                    .build()
+                
+                event_type = Event_TypeBuilder()\
+                    .set_tipo(1)\
+                    .set_eventoID(event.ID)\
+                    .set_profesorID(profesor_id_field.value)\
+                    .set_podio([primer_lugar_field.value, segundo_lugar_field.value, tercer_lugar_field.value])\
+                    .build()
+                
+                print("Evento creado:", event.__dict__)
+                print("Tipo de evento creado:", event_type.__dict__)
+
+                page.controls.remove(dlg)
+                page.update()
+
+            except ValueError as ex:
+                print("Error en formato de fecha u hora:", ex)
+        
+        def cerrar_dialogo(e):
+            page.controls.remove(dlg)
+            page.update()
+
+        dlg = ft.Container(
+            content=ft.Column(
+                [
+                    ft.Text("Crear Entrenamiento", size=20, weight="bold"),
+                    nombre_field,
+                    fecha_field,
+                    hora_field,
+                    profesor_id_field,
+                    primer_lugar_field,
+                    segundo_lugar_field,
+                    tercer_lugar_field,
+                    ft.Row(
+                        [
+                            ft.ElevatedButton("Guardar", on_click=guardar_torneo, color=ft.Colors.BLUE_600),
+                            ft.ElevatedButton("Cancelar", on_click=cerrar_dialogo, color=ft.Colors.RED_400),
+                        ],
+                        alignment=ft.MainAxisAlignment.END
+                    )
+                ],
+                spacing=10,
+                tight=True,
+            ),
+            padding=20,
+            bgcolor=ft.Colors.WHITE,
+            width=400,
+            border_radius=8,
+            shadow=ft.BoxShadow(blur_radius=10, color=ft.Colors.BLACK12),
+        )
+
+        page.controls.append(dlg)
+        page.update()
+
     combo = ft.Dropdown(
         options=[
             ft.dropdown.Option("Opción 1"),
@@ -12,77 +86,44 @@ def gestionar_torneos_view(page: ft.Page):
         ],
         hint_text="Seleccionar opción"
     )
+
     btn_volver = ft.IconButton(
         icon=ft.Icons.ARROW_BACK,
         icon_color=ft.Colors.BLUE_400,
         icon_size=20,
         tooltip="Volver",
-        on_click=lambda e: page.on_back() if hasattr(page, "on_back") else None
     )
+
     btn_buscar = ft.ElevatedButton("Buscar", on_click=lambda e: print("Buscar"))
 
+    btn_crear_torneo = ft.ElevatedButton(
+        "Crear torneo",
+        on_click=mostrar_crear_torneo,
+        color=ft.Colors.BLUE_600
+    )
+
+    btn_inicio = ft.ElevatedButton("Volver al inicio", on_click=lambda e: print("Volver al inicio"), color=ft.Colors.TEAL_600)
+
     toolbar_left = ft.Row(
-        controls=[btn_volver, combo, btn_buscar],
+        controls=[btn_volver, combo, btn_buscar, btn_crear_torneo, btn_inicio],
         alignment=ft.MainAxisAlignment.START
     )
+
     toolbar = ft.Row(
         controls=[toolbar_left],
         alignment=ft.MainAxisAlignment.SPACE_BETWEEN
     )
 
-    # --- Creación de la cuadrícula para torneos ---
     grid_torneos = ft.GridView(
         expand=True,
         max_extent=250,
-        runs_count=3,  # Cantidad de columnas en la cuadrícula
+        runs_count=3,
         spacing=10,
         run_spacing=10,
     )
 
-    # Contenedor principal que une la barra y la cuadrícula.
     main_container = ft.Column(
         controls=[toolbar, grid_torneos],
         spacing=10
     )
 
-    # --- Función interna para crear la tarjeta de un torneo ---
-    def crear_card_torneo(torneo: Event, torneo_info: Event_Type):
-        return ft.Card(
-            content=ft.Container(
-                content=ft.Column(
-                    [
-                        ft.Text(f"Nombre: {torneo.nombre}", weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
-                        ft.Text(f"Fecha: {torneo.fecha}"),
-                        ft.Text(f"Hora: ${torneo.hora}"),
-                        ft.Text(f"Podio: ${torneo_info.podio}"),
-                    ],
-                    spacing=5,
-                ),
-                padding=10,
-                bgcolor=ft.Colors.BLACK,
-                border_radius=10,
-                shadow=ft.BoxShadow(blur_radius=5, color=ft.Colors.BLACK12),
-            ),
-            elevation=2,
-            height=30
-        )
-
-    # --- Función interna para cargar torneos en la cuadrícula ---
-    def cargar_torneos(torneos, event_types):
-        grid_torneos.controls.clear()
-        for event_type in event_types:
-            if event_type.tipo == 1:
-                for torneo in torneos:
-                    if torneo.ID == event_type.eventoID:
-                        grid_torneos.controls.append(crear_card_torneo(torneo, event_type))
-        page.update()
-
-    # Se adjunta la función de carga al contenedor para poder llamarla externamente.
-    main_container.cargar_torneos = cargar_torneos
-
-    return main_container
-
-# Exportamos la vista con el alias 'tournaments'
-Gestionar_torneos = gestionar_torneos_view
-
-__all__ = ["gestionar_torneos"]
