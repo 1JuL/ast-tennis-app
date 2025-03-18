@@ -1,4 +1,5 @@
 import flet as ft
+from ..models.Payment import Payment
 
 class PaymentsView:
     
@@ -42,7 +43,37 @@ class PaymentsView:
         )
         
         self.view = ft.Container([toolbar,grid_pagos])
+        self.cargarPagos([Payment(1,1,28000,'28-10-2025'),Payment(1,1,30000,'28-10-2025',"Pagado")])# esto es pa simular, pero insitu recibe una lista
         
-        
+    
+    def crear_card_pago(pago: Payment):
+        return ft.Card(
+            content=ft.Container(
+                content=ft.Column(
+                    [
+                        ft.Text(f"ID: {pago.ID}", weight=ft.FontWeight.BOLD, color=ft.colors),
+                        ft.Text(f"ID Persona: {pago.personaId}"),
+                        ft.Text(f"Monto: ${pago.monto:.2f}"),
+                        ft.Text(f"Fecha: {pago.fecha}"),
+                        ft.Text(f"Estado: {pago.estado}", color= ft.colors.AMBER_500 if pago.estado == 'Pendiente' else ft.colors.GREEN_500)
+                        
+                    ],
+                    spacing=5,
+                    
+                ),
+                padding=10,
+                bgcolor= ft.colors.BLACK,
+                border_radius=10,
+                shadow=ft.BoxShadow(blur_radius=5, color=ft.colors.BLACK12),
+                border=ft.border.all(2,ft.colors.AMBER_500 if pago.estado == 'Pendiente' else ft.colors.GREEN_500),
+            ),
+            elevation=2,
+            height= 30
+        )
+   
+    def cargarPagos(self, pagos):
+           for pago in pagos:
+            self.view.grid_pagos.controls.append(self.crear_card_pago(pago))
+
         
         
