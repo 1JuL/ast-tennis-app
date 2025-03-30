@@ -3,6 +3,7 @@ from pages.gestionar_pagos import Gestionar_pagos
 from pages.visualizar_torneos import Gestionar_torneos
 from pages.gestionar_entrenamientos import Gestionar_entrenamientos  # Importa la nueva vista de entrenamientos
 from pages.visualizar_entrenamientos import Visualizar_entrenamientos  # Importa la nueva vista de entrenamientos
+
 def nav_buttons(page: ft.Page, show_main_menu):
     """
     Retorna un contenedor con botones de navegación para cargar otras vistas.

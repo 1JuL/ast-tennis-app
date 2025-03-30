@@ -19,82 +19,94 @@ def main(page: ft.Page):
         page.on_back = show_main_menu
 
         main_menu = ft.Container(
-        content= ft.Row(
-            [
-                # Imagen a la izquierda
-                ft.Container(
-                    content=ft.Image(
-                        src="./src/assets/ast-tennis-logo.png",
-                        width=350,
-                        height=350
+            content= ft.Row(
+                [
+                    # Imagen a la izquierda
+                    ft.Container(
+                        content=ft.Image(
+                            src="./src/assets/ast-tennis-logo.png",
+                            width=350,
+                            height=350
+                        ),
+                        expand=True
                     ),
-                    expand=True
-                ),
-                # Controles a la derecha
-                ft.Container(
-                    content=ft.Column(
-                        [
-                            ft.Text(
-                                "AST Tennis",
-                                size=32,
-                                text_align=ft.TextAlign.CENTER,
-                                color=ft.Colors.BLACK,
-                                style=ft.FontWeight.BOLD
-                            ),
-                            ft.Text(
-                                "¿Que vamos a hacer hoy?",
-                                size=16,
-                                text_align=ft.TextAlign.CENTER,
-                                color=ft.Colors.BLACK87
-                            ),
-                            ft.ElevatedButton(
-                                text="Iniciar sesión",
-                                height=50,
-                                width=250,
-                                color='#0F3BAC',
-                                bgcolor='#FEF7FF',
-                                style=ft.ButtonStyle(
-                                    shape=ft.RoundedRectangleBorder(radius=10),
-                                    elevation=5
+                    # Controles a la derecha
+                    ft.Container(
+                        content=ft.Column(
+                            [
+                                ft.Text(
+                                    "AST Tennis",
+                                    size=32,
+                                    text_align=ft.TextAlign.CENTER,
+                                    color=ft.Colors.BLACK,
+                                    style=ft.FontWeight.BOLD
                                 ),
-                                on_click=lambda _: go_to_login(),
-                            ),
-                            ft.ElevatedButton(
-                                text="Registrarse",
-                                height=50,
-                                width=250,
-                                color='#0F3BAC',
-                                style=ft.ButtonStyle(
-                                    shape=ft.RoundedRectangleBorder(radius=10),
-                                    elevation=5
+                                ft.Text(
+                                    "¿Que vamos a hacer hoy?",
+                                    size=16,
+                                    text_align=ft.TextAlign.CENTER,
+                                    color=ft.Colors.BLACK87
                                 ),
-                                bgcolor='#FEF7FF',
-                                on_click=lambda _: go_to_registration()
-                            ),
-                            ft.ElevatedButton(
-                                text="Salir",
-                                height=50,
-                                width=250,
-                                color='#B3261E',
-                                style=ft.ButtonStyle(
-                                    shape=ft.RoundedRectangleBorder(radius=10),
-                                    elevation=5
+                                ft.ElevatedButton(
+                                    text="Iniciar sesión",
+                                    height=50,
+                                    width=250,
+                                    color='#0F3BAC',
+                                    bgcolor='#FEF7FF',
+                                    style=ft.ButtonStyle(
+                                        shape=ft.RoundedRectangleBorder(radius=10),
+                                        elevation=5
+                                    ),
+                                    on_click=lambda _: go_to_login(),
                                 ),
-                                bgcolor = '#F9DEDC',
-                                on_click=lambda _: page.window.close()
-                            )
-                        ],
-                        alignment=ft.MainAxisAlignment.CENTER,
-                        horizontal_alignment=ft.CrossAxisAlignment.CENTER
-                    ),
-                    expand=True
-                )
-            ],
-            alignment=ft.MainAxisAlignment.CENTER
-        ),
-        gradient= ft.LinearGradient(colors=[ft.Colors.WHITE, ft.Colors.BLUE_200], begin=ft.alignment.top_center, end=ft.alignment.bottom_center),
-        expand=True
-    )
+                                ft.ElevatedButton(
+                                    text="Registrarse",
+                                    height=50,
+                                    width=250,
+                                    color='#0F3BAC',
+                                    style=ft.ButtonStyle(
+                                        shape=ft.RoundedRectangleBorder(radius=10),
+                                        elevation=5
+                                    ),
+                                    bgcolor='#FEF7FF',
+                                    on_click=lambda _: go_to_registration()
+                                ),
+                                ft.ElevatedButton(
+                                    text="Ir a Navegación",
+                                    height=50,
+                                    width=250,
+                                    color='#0F3BAC',
+                                    style=ft.ButtonStyle(
+                                        shape=ft.RoundedRectangleBorder(radius=10),
+                                        elevation=5
+                                    ),
+                                    bgcolor='#FEF7FF',
+                                    on_click=lambda _: go_to_nav_buttons()  # Botón que va a la vista de nav_buttons
+                                ),
+                                ft.ElevatedButton(
+                                    text="Salir",
+                                    height=50,
+                                    width=250,
+                                    color='#B3261E',
+                                    style=ft.ButtonStyle(
+                                        shape=ft.RoundedRectangleBorder(radius=10),
+                                        elevation=5
+                                    ),
+                                    bgcolor = '#F9DEDC',
+                                    on_click=lambda _: page.window.close()
+                                )
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            horizontal_alignment=ft.CrossAxisAlignment.CENTER
+                        ),
+                        expand=True
+                    )
+                ],
+                alignment=ft.MainAxisAlignment.CENTER
+            ),
+            gradient= ft.LinearGradient(colors=[ft.Colors.WHITE, ft.Colors.BLUE_200], begin=ft.alignment.top_center, end=ft.alignment.bottom_center),
+            expand=True
+        )
         page.controls = [main_menu]
         page.update()
 
@@ -106,7 +118,7 @@ def main(page: ft.Page):
         # Asignamos el callback para volver al menú principal
         page.on_back = show_main_menu
 
-        # Importamos la vista de registro desde pages/login.py
+        # Importamos la vista de login desde pages/login.py
         login_view = Login(page)
         page.controls = [login_view]
         page.update()
@@ -132,7 +144,7 @@ def main(page: ft.Page):
         # Asignamos el callback para volver al menú principal
         page.on_back = show_main_menu
 
-        # Importamos la vista de registro desde pages/registration.py
+        # Importamos la vista de nav_buttons
         nav_view = nav_buttons(page, show_main_menu)
         page.controls = [nav_view]
         page.update()
