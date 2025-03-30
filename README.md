@@ -1,4 +1,4 @@
-# AstTennisApp app
+# AstTennisApp
 
 ## Run the app
 
