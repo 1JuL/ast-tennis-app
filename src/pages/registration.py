@@ -25,9 +25,9 @@ def registration_view(page: ft.Page):
                                     elevation=5
                                 ),
                                 bgcolor='#FEF7FF',
-                                on_click=lambda _: register
+                                on_click=lambda e: register(e)
                             )
-    back_button = ft.ElevatedButton("Volver", bgcolor="#ffcccc", color="red", width=250, on_click=lambda _: go_back)
+    back_button = ft.ElevatedButton("Volver", bgcolor="#ffcccc", color="red", width=250, on_click=lambda e: go_back(e))
     
     
     # Función para mostrar un diálogo de información usando page.open(dlg)
@@ -86,7 +86,7 @@ def registration_view(page: ft.Page):
             show_dialog("Error en el registro.")
     
     # Función para volver al menú principal
-    def go_back():
+    def go_back(e):
         if hasattr(page, "on_back"):
             page.on_back()
         else:

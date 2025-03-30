@@ -81,7 +81,7 @@ def main(page: ft.Page):
                                     elevation=5
                                 ),
                                 bgcolor = '#F9DEDC',
-                                on_click=lambda _: page.window_close
+                                on_click=lambda _: page.window.close()
                             )
                         ],
                         alignment=ft.MainAxisAlignment.CENTER,

@@ -4,24 +4,23 @@ from utils.global_state import auth_state  # Importa la instancia global
 
 def login_view(page: ft.Page):
     # Definición de los campos de entrada para el login
-    txt_email = ft.TextField(
-        width=280,
-        height=40,
-        hint_text="Correo electrónico",
-        border="underline",
-        color="black",
-        prefix_icon=ft.Icons.EMAIL
-    )
-    txt_password = ft.TextField(
-        width=280,
-        height=40,
-        hint_text="Contraseña",
-        border="underline",
-        color="black",
-        password=True,
-        can_reveal_password=True,
-        prefix_icon=ft.Icons.LOCK
-    )
+    email_input = ft.TextField(label="Correo", prefix_icon=ft.Icons.EMAIL, color= 'black')
+    password_input = ft.TextField(label="Contraseña", password=True, prefix_icon=ft.Icons.LOCK, color= ft.Colors.BLACK)
+
+    login_button = ft.ElevatedButton(
+                                text="Registrarse",
+                                height=50,
+                                width=250,
+                                color='#0F3BAC',
+                                style=ft.ButtonStyle(
+                                    shape=ft.RoundedRectangleBorder(radius=10),
+                                    elevation=5
+                                ),
+                                bgcolor='#FEF7FF',
+                                on_click=lambda e: handle_login(e)
+                            )
+    back_button = ft.ElevatedButton("Volver", bgcolor="#ffcccc", color="red", width=250, on_click= lambda e: go_back(e))
+    
     
     # Spinner de carga
     spinner = ft.ProgressRing(visible=False)
@@ -31,8 +30,8 @@ def login_view(page: ft.Page):
         spinner.visible = True
         page.update()
         
-        email = txt_email.value
-        password = txt_password.value
+        email = email_input.value
+        password = password_input.value
         
         # Realiza la autenticación
         user = sign_in(email, password)
@@ -84,48 +83,33 @@ def login_view(page: ft.Page):
     
     # Construcción de la vista de login
     login_container = ft.Container(
-        content=ft.Column(
+            content=ft.Column(
             [
-                ft.Container(
-                    ft.Text(
-                        "Iniciar sesión",
-                        width=320,
-                        size=30,
-                        text_align=ft.TextAlign.CENTER,
-                        weight="w900"
-                    ),
-                    padding=ft.padding.only(20, 20)
+                ft.Column(
+                    [
+                        ft.Text("Iniciar sesión", size=32, weight=ft.FontWeight.BOLD,color=ft.Colors.BLACK),
+                        ft.Text("Hola de nuevo", size=16, color=ft.Colors.BLACK54)
+                    ],
+                    horizontal_alignment= 'center'
                 ),
-                ft.Container(txt_email, padding=ft.padding.only(20, 20)),
-                ft.Container(txt_password, padding=ft.padding.only(20, 20)),
-                ft.Container(spinner, alignment=ft.alignment.center, padding=ft.padding.only(10)),
-                ft.Container(
-                    ft.ElevatedButton(
-                        text="Iniciar sesión",
-                        width=280,
-                        bgcolor="black",
-                        on_click=handle_login
-                    ),
-                    padding=ft.padding.only(20, 20)
+                ft.Column(
+                    [
+                        ft.Row(controls=[email_input], alignment='center'),
+                        ft.Row(controls=[password_input], alignment='center')
+                    ],
+                    horizontal_alignment= ft.CrossAxisAlignment.CENTER
                 ),
-                ft.Container(
-                    ft.ElevatedButton(
-                        text="Volver",
-                        width=280,
-                        bgcolor="black",
-                        on_click=go_back
-                    ),
-                    padding=ft.padding.only(20, 20)
+                ft.Column(
+                    [login_button, back_button]
                 )
+                
             ],
-            alignment=ft.MainAxisAlignment.SPACE_EVENLY
+            alignment=ft.MainAxisAlignment.SPACE_AROUND,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            expand= True
         ),
-        border_radius=20,
-        width=320,
-        height=500,
-        gradient=ft.LinearGradient(
-            colors=[ft.Colors.PURPLE, ft.Colors.PINK, ft.Colors.RED]
-        )
+        gradient= ft.LinearGradient(colors=[ft.Colors.WHITE, ft.Colors.BLUE_200], begin=ft.alignment.top_center, end=ft.alignment.bottom_center),
+        expand=True,
     )
     
     return login_container
