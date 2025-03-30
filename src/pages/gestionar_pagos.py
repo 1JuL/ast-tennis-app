@@ -1,15 +1,13 @@
 import flet as ft
 from models.Payment import Payment  # Ajusta la ruta según tu estructura de carpetas
+from utils.ConexionDB import api_client
 
 def gestionar_pagos_view(page: ft.Page):
     # Barra de herramientas
     combo = ft.Dropdown(
         options=[
-            ft.dropdown.Option("Opción 1"),
-            ft.dropdown.Option("Opción 2"),
-            ft.dropdown.Option("Opción 3"),
         ],
-        hint_text="Seleccionar opción"
+        hint_text="Seleccione"
     )
     btn_volver = ft.IconButton(
         icon=ft.Icons.ARROW_BACK,
@@ -43,6 +41,15 @@ def gestionar_pagos_view(page: ft.Page):
         run_spacing=10,
     )
 
+
+    # funcion para cargar los usuarios al combo box
+    def cargarUsuariosCombo():
+        """ se cargan los usuarios al combox box """
+        pass
+
+        
+
+
     # Función para crear la tarjeta de un pago
     def crear_card_pago(pago: Payment):
         return ft.Card(
@@ -61,7 +68,7 @@ def gestionar_pagos_view(page: ft.Page):
                     spacing=5,
                 ),
                 padding=10,
-                bgcolor=ft.Colors.BLACK,
+                bgcolor=ft.Colors.SURFACE,
                 border_radius=10,
                 shadow=ft.BoxShadow(blur_radius=5, color=ft.Colors.BLACK12),
                 border=ft.border.all(2, ft.Colors.AMBER_500 if pago.estado == 'Pendiente' else ft.Colors.GREEN_500),

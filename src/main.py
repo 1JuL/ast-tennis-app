@@ -19,64 +19,82 @@ def main(page: ft.Page):
         page.on_back = show_main_menu
 
         main_menu = ft.Container(
-            content=ft.Row(
-                [
-                    # Imagen a la izquierda
-                    ft.Container(
-                        content=ft.Image(
-                            src="src/assets/ast-tennis-logo.png",
-                            width=600,
-                            height=600
-                        ),
-                        expand=True
+        content= ft.Row(
+            [
+                # Imagen a la izquierda
+                ft.Container(
+                    content=ft.Image(
+                        src="./src/assets/ast-tennis-logo.png",
+                        width=350,
+                        height=350
                     ),
-                    # Controles a la derecha
-                    ft.Container(
-                        content=ft.Column(
-                            [
-                                ft.Text(
-                                    "Bienvenido a AST Tennis. Por favor seleccione una opción.",
-                                    size=16,
-                                    text_align=ft.TextAlign.CENTER,
-                                    color=ft.Colors.BLACK
+                    expand=True
+                ),
+                # Controles a la derecha
+                ft.Container(
+                    content=ft.Column(
+                        [
+                            ft.Text(
+                                "AST Tennis",
+                                size=32,
+                                text_align=ft.TextAlign.CENTER,
+                                color=ft.Colors.BLACK,
+                                style=ft.FontWeight.BOLD
+                            ),
+                            ft.Text(
+                                "¿Que vamos a hacer hoy?",
+                                size=16,
+                                text_align=ft.TextAlign.CENTER,
+                                color=ft.Colors.BLACK87
+                            ),
+                            ft.ElevatedButton(
+                                text="Iniciar sesión",
+                                height=50,
+                                width=250,
+                                color='#0F3BAC',
+                                bgcolor='#FEF7FF',
+                                style=ft.ButtonStyle(
+                                    shape=ft.RoundedRectangleBorder(radius=10),
+                                    elevation=5
                                 ),
-                                ft.ElevatedButton(
-                                    text="Iniciar sesión",
-                                    width=250,
-                                    on_click=lambda e: go_to_login()
+                                on_click=lambda _: go_to_login(),
+                            ),
+                            ft.ElevatedButton(
+                                text="Registrarse",
+                                height=50,
+                                width=250,
+                                color='#0F3BAC',
+                                style=ft.ButtonStyle(
+                                    shape=ft.RoundedRectangleBorder(radius=10),
+                                    elevation=5
                                 ),
-                                ft.ElevatedButton(
-                                    text="Registrarse",
-                                    width=250,
-                                    on_click=lambda e: go_to_registration()
+                                bgcolor='#FEF7FF',
+                                on_click=lambda _: go_to_registration()
+                            ),
+                            ft.ElevatedButton(
+                                text="Salir",
+                                height=50,
+                                width=250,
+                                color='#B3261E',
+                                style=ft.ButtonStyle(
+                                    shape=ft.RoundedRectangleBorder(radius=10),
+                                    elevation=5
                                 ),
-                                ft.ElevatedButton(
-                                    text="Nav_buttons",
-                                    width=250,
-                                    on_click=lambda e: go_to_nav_buttons()
-                                ),
-                                ft.ElevatedButton(
-                                    text="Salir",
-                                    width=250,
-                                    on_click=lambda e: page.window.close()
-                                )
-                            ],
-                            alignment=ft.MainAxisAlignment.CENTER,
-                            horizontal_alignment=ft.CrossAxisAlignment.CENTER
-                        ),
-                        expand=True
-                    )
-                ],
-                alignment=ft.MainAxisAlignment.CENTER
-            ),
-            width=800,
-            expand=True,
-            gradient=ft.LinearGradient(
-                colors=[ft.Colors.BLUE_50, ft.Colors.BLUE_200, ft.Colors.BLUE_400],
-                begin=ft.alignment.top_left,
-                end=ft.alignment.bottom_right,
-            ),
-        )
+                                bgcolor = '#F9DEDC',
+                                on_click=lambda _: page.window_close
+                            )
+                        ],
+                        alignment=ft.MainAxisAlignment.CENTER,
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER
+                    ),
+                    expand=True
+                )
+            ],
+            alignment=ft.MainAxisAlignment.CENTER
+        ),
+        gradient= ft.LinearGradient(colors=[ft.Colors.WHITE, ft.Colors.BLUE_200], begin=ft.alignment.top_center, end=ft.alignment.bottom_center),
+        expand=True
+    )
         page.controls = [main_menu]
         page.update()
 

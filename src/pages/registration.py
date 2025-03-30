@@ -5,40 +5,30 @@ from utils.global_state import auth_state
 
 def registration_view(page: ft.Page):
     # Definición de los campos de entrada
-    txt_username = ft.TextField(
-        width=280,
-        height=40,
-        hint_text="Nombre de usuario",
-        border="underline",
-        color="black",
-        prefix_icon=ft.Icons.PERSON
-    )
-    txt_email = ft.TextField(
-        width=280,
-        height=40,
-        hint_text="Correo electrónico",
-        border="underline",
-        color="black",
-        prefix_icon=ft.Icons.EMAIL
-    )
-    txt_confirm_email = ft.TextField(
-        width=280,
-        height=40,
-        hint_text="Confirmar correo electrónico",
-        border="underline",
-        color="black",
-        prefix_icon=ft.Icons.EMAIL
-    )
-    txt_password = ft.TextField(
-        width=280,
-        height=40,
-        hint_text="Contraseña",
-        border="underline",
-        color="black",
-        password=True,
-        can_reveal_password=True,
-        prefix_icon=ft.Icons.LOCK
-    )
+    name_input = ft.TextField(label="Nombre", prefix_icon=ft.Icons.PERSON, color='black', width=300)
+    lastname_input = ft.TextField(label="Apellido", prefix_icon=ft.Icons.PERSON, color='black', width=300)
+    birthdate_input = ft.TextField(label="Fecha de nacimiento", prefix_icon=ft.Icons.CALENDAR_MONTH, color='black', width=300)
+    phone_input = ft.TextField(label="Teléfono", prefix_icon=ft.Icons.PHONE, color='black', width=300)
+    address_input = ft.TextField(label="Dirección", prefix_icon=ft.Icons.HOME, color='black', width=300)
+    email_input = ft.TextField(label="Correo", prefix_icon=ft.Icons.EMAIL, color='black', width=300)
+    password_input = ft.TextField(label="Contraseña", password=True, prefix_icon=ft.Icons.LOCK, color='black', width=300)
+
+    #botones
+
+    login_button = ft.ElevatedButton(
+                                text="Registrarse",
+                                height=50,
+                                width=250,
+                                color='#0F3BAC',
+                                style=ft.ButtonStyle(
+                                    shape=ft.RoundedRectangleBorder(radius=10),
+                                    elevation=5
+                                ),
+                                bgcolor='#FEF7FF',
+                                on_click=lambda _: register
+                            )
+    back_button = ft.ElevatedButton("Volver", bgcolor="#ffcccc", color="red", width=250, on_click=lambda _: go_back)
+    
     
     # Función para mostrar un diálogo de información usando page.open(dlg)
     def show_dialog(message, on_close=None):
@@ -60,22 +50,24 @@ def registration_view(page: ft.Page):
     
     # Función para manejar el registro
     def register(e):
-        username = txt_username.value
-        email = txt_email.value
-        confirm_email = txt_confirm_email.value
-        password = txt_password.value
-        
-        # Validación básica de los campos
-        if not username or not email or not confirm_email or not password:
-            show_dialog("Todos los campos son obligatorios.")
-            return
-        
-        if email != confirm_email:
-            show_dialog("Los correos electrónicos no coinciden.")
-            return
+        user_data = {
+            "nombre": name_input.value.strip(),
+            "apellido": lastname_input.value.strip(),
+            "fecha": birthdate_input.value.strip(),
+            "telefono": phone_input.value.strip(),
+            "direccion": address_input.value.strip(),
+            "email": email_input.value.strip(),
+            "password": password_input.value.strip(),
+        }
+
+        # Validar que ningún campo esté vacío
+        for campo, valor in user_data.items():
+            if not valor:  # Si está vacío
+                show_dialog("Complete todos los campos")
+                return  
         
         # Llama a sign_up; éste retorna el usuario creado o None
-        user = sign_up(email, password)
+        user = sign_up(user_data["email"], user_data["password"])
         if user is not None:
             # Registro exitoso: actualiza el estado global
             auth_state.is_authenticated = True
@@ -94,7 +86,7 @@ def registration_view(page: ft.Page):
             show_dialog("Error en el registro.")
     
     # Función para volver al menú principal
-    def go_back(e):
+    def go_back():
         if hasattr(page, "on_back"):
             page.on_back()
         else:
@@ -103,49 +95,38 @@ def registration_view(page: ft.Page):
     
     # Construcción de la vista de registro
     registration_container = ft.Container(
-        content=ft.Column(
+            content=ft.Column(
             [
-                ft.Container(
-                    ft.Text(
-                        "Registro",
-                        width=320,
-                        size=30,
-                        text_align="center",
-                        weight="w900"
-                    ),
-                    padding=ft.padding.only(20, 20)
+                ft.Column(
+                    [
+                        ft.Text("Iniciar sesión", size=32, weight=ft.FontWeight.BOLD,color=ft.Colors.BLACK),
+                        ft.Text("Hola de nuevo", size=16, color=ft.Colors.BLACK54)
+                    ],
+                    horizontal_alignment= 'center'
                 ),
-                ft.Container(txt_username, padding=ft.padding.only(20, 20)),
-                ft.Container(txt_email, padding=ft.padding.only(20, 20)),
-                ft.Container(txt_confirm_email, padding=ft.padding.only(20, 20)),
-                ft.Container(txt_password, padding=ft.padding.only(20, 20)),
-                ft.Container(
-                    ft.ElevatedButton(
-                        text="Registrar",
-                        width=280,
-                        bgcolor="black",
-                        on_click=register
-                    ),
-                    padding=ft.padding.only(20, 20)
+                ft.Column(
+                    [
+                        ft.Row(controls=[name_input], alignment='center'),
+                        ft.Row(controls=[lastname_input], alignment='center'),
+                        ft.Row(controls=[birthdate_input], alignment='center'),
+                        ft.Row(controls=[phone_input], alignment='center'),
+                        ft.Row(controls=[address_input], alignment='center'),
+                        ft.Row(controls=[email_input], alignment='center'),
+                        ft.Row(controls=[password_input], alignment='center')
+                    ],
+                    horizontal_alignment= ft.CrossAxisAlignment.CENTER
                 ),
-                ft.Container(
-                    ft.ElevatedButton(
-                        text="Volver",
-                        width=280,
-                        bgcolor="black",
-                        on_click=go_back
-                    ),
-                    padding=ft.padding.only(20, 20)
+                ft.Column(
+                    [login_button, back_button]
                 )
+                
             ],
-            alignment=ft.MainAxisAlignment.SPACE_EVENLY
+            alignment=ft.MainAxisAlignment.SPACE_AROUND,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            expand= True
         ),
-        border_radius=20,
-        width=320,
-        height=500,
-        gradient=ft.LinearGradient(
-            colors=[ft.Colors.PURPLE, ft.Colors.PINK, ft.Colors.RED]
-        )
+        gradient= ft.LinearGradient(colors=[ft.Colors.WHITE, ft.Colors.BLUE_200], begin=ft.alignment.top_center, end=ft.alignment.bottom_center),
+        expand=True,
     )
     
     return registration_container
