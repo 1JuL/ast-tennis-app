@@ -2,7 +2,7 @@ import flet as ft
 from models.event import Event
 from models.event_type import Event_Type
 
-def gestionar_torneos_view(page: ft.Page):
+def visualizar_torneos_view(page: ft.Page):
     # --- Creación de la barra de herramientas ---
     combo = ft.Dropdown(
         options=[
@@ -82,7 +82,7 @@ def gestionar_torneos_view(page: ft.Page):
 
     return main_container
 
-# Exportamos la vista con el alias 'tournaments'
-Gestionar_torneos = gestionar_torneos_view
 
-__all__ = ["gestionar_torneos"]
+Visualizar_torneos = visualizar_torneos_view
+
+__all__ = ["visualizar_torneos"]

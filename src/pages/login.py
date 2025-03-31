@@ -1,24 +1,38 @@
 import flet as ft
 from utils.firebase import sign_in
-from utils.global_state import auth_state  # Importa la instancia global
+from utils.global_state import auth_state
+from pages.main_menu import Main_menu
 
 def login_view(page: ft.Page):
     # Definición de los campos de entrada para el login
-    email_input = ft.TextField(label="Correo", prefix_icon=ft.Icons.EMAIL, color= 'black')
-    password_input = ft.TextField(label="Contraseña", password=True, prefix_icon=ft.Icons.LOCK, color= ft.Colors.BLACK)
+    email_input = ft.TextField(
+        label="Correo", 
+        prefix_icon=ft.Icons.EMAIL, 
+        color= 'black',
+        label_style=ft.TextStyle(color=ft.Colors.BLUE_GREY_500),
+        content_padding=ft.padding.only(bottom=15),
+    )
+    password_input = ft.TextField(
+        label="Contraseña", 
+        password=True, 
+        prefix_icon=ft.Icons.LOCK, 
+        color= ft.Colors.BLACK,
+        label_style=ft.TextStyle(color=ft.Colors.BLUE_GREY_500),
+        content_padding=ft.padding.only(bottom=15),
+    )
 
     login_button = ft.ElevatedButton(
-                                text="Registrarse",
-                                height=50,
-                                width=250,
-                                color='#0F3BAC',
-                                style=ft.ButtonStyle(
-                                    shape=ft.RoundedRectangleBorder(radius=10),
-                                    elevation=5
-                                ),
-                                bgcolor='#FEF7FF',
-                                on_click=lambda e: handle_login(e)
-                            )
+        text="Iniciar Sesión",
+        height=50,
+        width=250,
+        color='#0F3BAC',
+        style=ft.ButtonStyle(
+            shape=ft.RoundedRectangleBorder(radius=10),
+            elevation=5
+        ),
+        bgcolor='#FEF7FF',
+        on_click=lambda e: handle_login(e)
+    )
     back_button = ft.ElevatedButton("Volver", bgcolor="#ffcccc", color="red", width=250, on_click= lambda e: go_back(e))
     
     
@@ -41,7 +55,6 @@ def login_view(page: ft.Page):
         page.update()
         
         if user:
-            print("Usuario autenticado:", user)
             # Actualiza el estado global
             auth_state.is_authenticated = True
             auth_state.user = user
@@ -73,6 +86,13 @@ def login_view(page: ft.Page):
     def close_dialog(e, dialog):
         dialog.open = False
         page.update()
+        page.views.append(
+            ft.View(
+                route="/main_menu",
+                controls=[Main_menu(page)]
+            )
+        )
+        page.go("/main_menu")
         
     def go_back(e):
         if hasattr(page, "on_back"):
@@ -114,7 +134,7 @@ def login_view(page: ft.Page):
     
     return login_container
 
-# "Exportamos" la función con el alias 'login'
+
 Login = login_view
 
 __all__ = ["login"]

@@ -127,3 +127,7 @@ def gestionar_torneos_view(page: ft.Page):
         spacing=10
     )
 
+
+Gestionar_torneos = gestionar_torneos_view
+
+__all__ = ["gestionar_torneos"]

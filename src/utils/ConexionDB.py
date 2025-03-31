@@ -2,7 +2,7 @@ import requests
 import os
 from dotenv import load_dotenv
 
-# Cargar variables de entorno (opcional, si configuras la URL base en un .env)
+# Cargar variables de entorno
 load_dotenv()
 
 class APIClient:
