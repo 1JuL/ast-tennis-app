@@ -3,7 +3,7 @@ import datetime
 import re
 from models.person import PersonBuilder  # Asegúrate de que la ruta sea correcta
 from utils.global_state import auth_state
-from pages.main_menu import Main_menu
+from pages.admin_menu import Admin_menu
 from utils.ConexionDB import api_client  # Instancia global de APIClient
 
 # Patrones de validación
@@ -142,7 +142,7 @@ def add_user_info_view(page: ft.Page):
         page.views.append(
             ft.View(
                 route="/main_menu",
-                controls=[Main_menu(page)]
+                controls=[Admin_menu(page)]
             )
         )
         page.go("/main_menu")

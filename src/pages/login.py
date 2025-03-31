@@ -1,7 +1,7 @@
 import flet as ft
 from utils.firebase import sign_in
 from utils.global_state import auth_state
-from pages.main_menu import Main_menu
+from pages.admin_menu import Admin_menu
 
 def login_view(page: ft.Page):
     # Definición de los campos de entrada para el login
@@ -65,7 +65,7 @@ def login_view(page: ft.Page):
             )
             # Agrega la acción, ya que dlg ya existe
             dlg.actions.append(
-                ft.TextButton("OK", on_click=lambda e: close_dialog(e, dlg))
+                ft.TextButton("OK", on_click=lambda e: close_dialog_success(e, dlg))
             )
         else:
             print("Error al iniciar sesión")
@@ -86,10 +86,14 @@ def login_view(page: ft.Page):
     def close_dialog(e, dialog):
         dialog.open = False
         page.update()
+    
+    def close_dialog_success(e, dialog):
+        dialog.open = False
+        page.update()
         page.views.append(
             ft.View(
                 route="/main_menu",
-                controls=[Main_menu(page)]
+                controls=[Admin_menu(page)]
             )
         )
         page.go("/main_menu")
