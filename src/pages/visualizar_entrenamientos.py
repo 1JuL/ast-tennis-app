@@ -14,6 +14,16 @@ def visualizar_entrenamientos(page: ft.Page):
             print(f"Error al obtener los eventos: {e}")
             return []  # En caso de error, retornamos una lista vacía
 
+    # Función para obtener el tipo de evento (incluyendo el profesor) desde la API
+    def obtener_tipo_evento(tipo_id):
+        try:
+            # Realiza la solicitud GET para obtener el tipo de evento, pasando el tipo como parámetro
+            response = api_client.get(f"eventosTipos/{tipo_id}")  # Ruta para obtener tipo de evento por ID
+            return response  # Devuelve el tipo de evento, que incluirá el profesorID
+        except requests.exceptions.RequestException as e:
+            print(f"Error al obtener tipo de evento: {e}")
+            return None  # En caso de error, retornamos None
+
     # Cargar los eventos desde la API
     eventos = obtener_torneos()
 
@@ -26,7 +36,8 @@ def visualizar_entrenamientos(page: ft.Page):
                         ft.Text(evento["nombre"], size=20, weight="bold"),
                         ft.Text(f"Fecha: {evento['fecha']}"),
                         ft.Text(f"Hora: {evento['hora']}"),
-                     ],
+                        ft.Text(f"Profesor: {evento['profesor']}"),  # Mostramos el nombre del profesor
+                    ],
                     spacing=10
                 ),
                 padding=20,
@@ -65,7 +76,19 @@ def visualizar_entrenamientos(page: ft.Page):
     for evento in eventos:
         # Asignamos el tipo de evento con ID 2
         evento["tipo"] = 2  # Aseguramos que el tipo de evento sea 2
-        grid_entrenamientos.controls.append(crear_card_entrenamiento(evento))
+        
+        # Obtenemos el tipo de evento (incluyendo el profesor)
+        tipo_evento = obtener_tipo_evento(evento["tipo"])
+        
+        if tipo_evento:
+            # Suponemos que tipo_evento tiene el campo "profesorID", lo obtenemos
+            profesor_id = tipo_evento.get("profesorID", "")
+            
+            # Asignamos el nombre del profesor si se encuentra en el tipo de evento
+            evento["profesor"] = profesor_id.split(' ')[0]  # Extraemos el nombre del profesor, suponiendo el formato adecuado
+            
+            # Agregamos el evento con la información completa
+            grid_entrenamientos.controls.append(crear_card_entrenamiento(evento))
 
     # Barra de herramientas
     btn_volver = ft.IconButton(
