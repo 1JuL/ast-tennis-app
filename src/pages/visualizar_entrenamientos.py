@@ -1,5 +1,5 @@
 import flet as ft
-from utils.api_client import api_client  # Asegúrate de que el cliente de la API esté disponible
+from utils.ConexionDB import api_client  # Asegúrate de que el cliente de la API esté disponible
 import requests
 
 def visualizar_entrenamientos(page: ft.Page):

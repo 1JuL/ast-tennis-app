@@ -2,7 +2,7 @@ import flet as ft
 from models.event import Event, EventBuilder
 from models.event_type import Event_Type, Event_TypeBuilder
 import datetime
-from utils.api_client import api_client
+from utils.ConexionDB import api_client  # Ahora usando el cliente de la API correctamente
 
 def gestionar_entrenamientos(page: ft.Page):
 
@@ -13,7 +13,6 @@ def gestionar_entrenamientos(page: ft.Page):
 
     # Función para crear tarjeta de entrenamiento
     def crear_card_entrenamiento(entrenamiento):
-        # Asegurarse de que 'profesor' esté en el evento, si no, asignamos un valor por defecto
         profesor = entrenamiento.get("profesor", "Desconocido")
         
         # Crear los botones de Modificar y Eliminar
@@ -27,8 +26,8 @@ def gestionar_entrenamientos(page: ft.Page):
                         ft.Text(entrenamiento["nombre"], size=20, weight="bold"),
                         ft.Text(f"Fecha: {entrenamiento['fecha']}"),
                         ft.Text(f"Hora: {entrenamiento['hora']}"),
-                        ft.Text(f"Profesor: {profesor}"),  # Mostramos el nombre del profesor
-                        ft.Row([btn_modificar, btn_eliminar], spacing=10, alignment=ft.MainAxisAlignment.CENTER)  # Botones debajo
+                        ft.Text(f"Profesor: {profesor}"),
+                        ft.Row([btn_modificar, btn_eliminar], spacing=10, alignment=ft.MainAxisAlignment.CENTER) 
                     ],
                     spacing=10
                 ),
@@ -44,31 +43,28 @@ def gestionar_entrenamientos(page: ft.Page):
     # Función para obtener la lista de profesores desde la API
     def obtener_profesores():
         try:
-            # Realiza la solicitud GET para obtener las personas
             response = api_client.get("personas")  # Asumimos que la ruta es /personas
-            # Filtrar solo aquellos con el rol 'Profesor'
             profesores = [persona for persona in response if persona['rol'] == 'Profesor']
-            return profesores  # La respuesta será una lista de profesores
+            return profesores
         except Exception as e:
             print(f"Error al obtener los profesores: {e}")
-            return []  # En caso de error, retornamos una lista vacía
+            return []
 
     # Función para obtener los entrenamientos existentes desde la API
     def obtener_entrenamientos():
         try:
-            # Realiza la solicitud GET para obtener los eventos
             response = api_client.get("eventos")  # Asumimos que la ruta es /eventos
-            return response  # La respuesta será una lista de eventos
+            return response
         except Exception as e:
             print(f"Error al obtener los eventos: {e}")
-            return []  # En caso de error, retornamos una lista vacía
+            return []
 
     # Función para volver al menú o la vista anterior
     def go_back(page):
         if hasattr(page, "on_back"):
-            page.on_back()  # Llamamos a la función de regresar al menú
+            page.on_back()
         else:
-            page.clean()  # Limpiamos la página actual y volvemos a cargar el menú
+            page.clean()
             page.update()
 
     # Función de búsqueda
@@ -82,30 +78,33 @@ def gestionar_entrenamientos(page: ft.Page):
             grid_entrenamientos.controls.append(crear_card_entrenamiento(entrenamiento))
         page.update()
 
-    # Función para modificar un entrenamiento: carga el formulario con los datos actuales
-    def mostrar_formulario_editar(entrenamiento):
-        # Definir los campos del formulario de edición
-        nombre_field = ft.TextField(label="Nombre del entrenamiento", hint_text="Ingresa el nombre", value=entrenamiento["nombre"])
-        categoria_field = ft.TextField(label="Categoría", hint_text="Ingresa la categoría", value=entrenamiento["categoria"])
-        fecha_field = ft.TextField(label="Fecha del entrenamiento", hint_text="dd/mm/aaaa", value=entrenamiento["fecha"])
-        hora_field = ft.TextField(label="Hora del entrenamiento", hint_text="hh:mm", value=entrenamiento["hora"])
+    # Función para crear un nuevo entrenamiento
+    def mostrar_formulario_crear(e):
+        nombre_field = ft.TextField(label="Nombre del entrenamiento", hint_text="Ingresa el nombre")
+        categoria_field = ft.TextField(label="Categoría", hint_text="Ingresa la categoría")
+        fecha_field = ft.TextField(label="Fecha del entrenamiento", hint_text="dd/mm/aaaa")
+        hora_field = ft.TextField(label="Hora del entrenamiento", hint_text="hh:mm")
 
-        # Aquí, profesor_field es un dropdown que carga los profesores disponibles
         profesor_field = ft.Dropdown(
             label="Selecciona el nombre del profesor",
             options=[ft.dropdown.Option(profesor['nombre']) for profesor in profesores],
-            value=entrenamiento.get("profesor", ""),  # Asignamos el valor del profesor actual
             width=300,
         )
 
-        # Ahora, con los valores precargados, podemos actualizar el formulario
-        page.update()
-
-        # Función para guardar los cambios en el entrenamiento
-        def guardar_entrenamiento(e, entrenamiento):  # Se pasa 'entrenamiento' como parámetro
+        def guardar_entrenamiento(e):
             try:
-                # Convertir la fecha y hora a formato de fecha y hora
+                # Validar que no haya campos vacíos
+                if not nombre_field.value or not categoria_field.value or not fecha_field.value or not hora_field.value or not profesor_field.value:
+                    print("Todos los campos deben ser llenados")
+                    return
+
+                # Validar fecha
                 fecha = datetime.datetime.strptime(fecha_field.value, '%d/%m/%Y').date()
+                fecha_actual = datetime.datetime.now().date()
+                if fecha < fecha_actual or fecha > (fecha_actual + datetime.timedelta(days=365*10)):
+                    print("La fecha debe ser entre hoy y 10 años en el futuro.")
+                    return
+
                 hora = datetime.datetime.strptime(hora_field.value, '%H:%M').time()
 
                 # Crear un nuevo evento usando el EventBuilder
@@ -116,7 +115,6 @@ def gestionar_entrenamientos(page: ft.Page):
                     .set_tipo(categoria_field.value)\
                     .build()
 
-                # Preparar los datos para enviar a la API
                 evento_data = {
                     "nombre": event.nombre,
                     "fecha": str(event.fecha),
@@ -125,26 +123,20 @@ def gestionar_entrenamientos(page: ft.Page):
                     "categoria": categoria_field.value
                 }
 
-                # Llamar a la API para actualizar el evento
-                response_evento = api_client.put(f"eventos/{entrenamiento['id']}", evento_data)
+                # Llamar a la API para crear el evento
+                response_evento = api_client.post("eventos", evento_data)
 
-                # Crear o actualizar el tipo de evento con el ID del profesor
                 evento_tipo_data = {
                     "tipo": 2,  # Aseguramos que el tipo es 2
                     "eventoID": event.ID,
-                    "profesorID": profesor_field.value,  # Usamos el valor del dropdown para obtener el ID del profesor
+                    "profesorID": profesor_field.value,
                     "podio": "1er lugar"
                 }
 
-                response_evento_tipo = api_client.put(f"eventosTipos/{entrenamiento['tipo']}", evento_tipo_data)
+                response_evento_tipo = api_client.post("eventosTipos", evento_tipo_data)
 
-                print("Evento actualizado:", response_evento)
-                print("Tipo de evento actualizado:", response_evento_tipo)
-
-                # Cargar los eventos ya existentes nuevamente para mantener la lista completa
+                # Recargar los entrenamientos después de la creación
                 entrenamientos_existentes = obtener_entrenamientos()
-
-                # Limpiar y agregar las tarjetas de todos los entrenamientos (existentes + nuevos)
                 grid_entrenamientos.controls.clear()
                 for entrenamiento in entrenamientos_existentes:
                     grid_entrenamientos.controls.append(crear_card_entrenamiento(entrenamiento))
@@ -159,7 +151,96 @@ def gestionar_entrenamientos(page: ft.Page):
             page.controls.remove(dlg)
             page.update()
 
-        # Crear el cuadro de diálogo para la edición
+        dlg = ft.Container(
+            content=ft.Column(
+                [
+                    ft.Text("Crear Entrenamiento", size=20, weight="bold"),
+                    nombre_field,
+                    categoria_field,
+                    fecha_field,
+                    hora_field,
+                    profesor_field,
+                    ft.Row(
+                        [
+                            ft.ElevatedButton("Guardar", on_click=guardar_entrenamiento, color=ft.Colors.BLUE_600),
+                            ft.ElevatedButton("Cancelar", on_click=cerrar_dialogo, color=ft.Colors.RED_400),
+                        ],
+                        alignment=ft.MainAxisAlignment.END
+                    )
+                ],
+                spacing=15,  
+                tight=True,
+            ),
+            padding=30,  
+            bgcolor=ft.Colors.WHITE,
+            width=400,
+            border_radius=10,
+            shadow=ft.BoxShadow(blur_radius=15, color=ft.Colors.BLACK12),
+        )
+
+        page.controls.append(dlg)
+        page.update()
+
+    # Función para modificar un entrenamiento: carga el formulario con los datos actuales
+    def mostrar_formulario_editar(entrenamiento):
+        nombre_field = ft.TextField(label="Nombre del entrenamiento", hint_text="Ingresa el nombre", value=entrenamiento["nombre"])
+        categoria_field = ft.TextField(label="Categoría", hint_text="Ingresa la categoría", value=entrenamiento["categoria"])
+        fecha_field = ft.TextField(label="Fecha del entrenamiento", hint_text="dd/mm/aaaa", value=entrenamiento["fecha"])
+        hora_field = ft.TextField(label="Hora del entrenamiento", hint_text="hh:mm", value=entrenamiento["hora"])
+
+        profesor_field = ft.Dropdown(
+            label="Selecciona el nombre del profesor",
+            options=[ft.dropdown.Option(profesor['nombre']) for profesor in profesores],
+            value=entrenamiento.get("profesor", ""),
+            width=300,
+        )
+
+        def guardar_entrenamiento(e):
+            try:
+                fecha = datetime.datetime.strptime(fecha_field.value, '%d/%m/%Y').date()
+                hora = datetime.datetime.strptime(hora_field.value, '%H:%M').time()
+
+                event = EventBuilder()\
+                    .set_nombre(nombre_field.value)\
+                    .set_fecha(fecha)\
+                    .set_hora(hora)\
+                    .set_tipo(categoria_field.value)\
+                    .build()
+
+                evento_data = {
+                    "nombre": event.nombre,
+                    "fecha": str(event.fecha),
+                    "hora": str(event.hora),
+                    "tipo": 2,
+                    "categoria": categoria_field.value
+                }
+
+                response_evento = api_client.put(f"eventos/{entrenamiento['id']}", evento_data)
+
+                evento_tipo_data = {
+                    "tipo": 2,
+                    "eventoID": event.ID,
+                    "profesorID": profesor_field.value,
+                    "podio": "1er lugar"
+                }
+
+                response_evento_tipo = api_client.put(f"eventosTipos/{entrenamiento['tipo']}", evento_tipo_data)
+
+                entrenamientos_existentes = obtener_entrenamientos()
+                grid_entrenamientos.controls.clear()
+                for entrenamiento in entrenamientos_existentes:
+                    grid_entrenamientos.controls.append(crear_card_entrenamiento(entrenamiento))
+
+                page.controls.remove(dlg)
+                page.update()
+
+            except ValueError as ex:
+                print("Error en formato de fecha u hora:", ex)
+
+        def cerrar_dialogo(e):
+            page.controls.remove(dlg)
+            page.update()
+
         dlg = ft.Container(
             content=ft.Column(
                 [
@@ -171,16 +252,16 @@ def gestionar_entrenamientos(page: ft.Page):
                     profesor_field,
                     ft.Row(
                         [
-                            ft.ElevatedButton("Guardar", on_click=lambda e: guardar_entrenamiento(e, entrenamiento), color=ft.Colors.BLUE_600),
+                            ft.ElevatedButton("Guardar", on_click=guardar_entrenamiento, color=ft.Colors.BLUE_600),
                             ft.ElevatedButton("Cancelar", on_click=cerrar_dialogo, color=ft.Colors.RED_400),
                         ],
                         alignment=ft.MainAxisAlignment.END
                     )
                 ],
-                spacing=15,  # Ajustar el espaciado entre los elementos del formulario
+                spacing=15,  
                 tight=True,
             ),
-            padding=30,  # Más padding alrededor del cuadro de diálogo
+            padding=30,  
             bgcolor=ft.Colors.WHITE,
             width=400,
             border_radius=10,
@@ -192,13 +273,9 @@ def gestionar_entrenamientos(page: ft.Page):
 
     # Función para eliminar un entrenamiento
     def eliminar_entrenamiento(entrenamiento):
-        print(f"Eliminando el entrenamiento: {entrenamiento['nombre']}")
         try:
-            # Llamar a la API para eliminar el evento usando su ID
-            response = api_client.delete(f"eventos/{entrenamiento['id']}")  # Asumiendo que 'id' es el identificador del evento
+            response = api_client.delete(f"eventos/{entrenamiento['id']}")
             if response:
-                print("Evento eliminado exitosamente.")
-                # Recargar los eventos después de eliminar
                 entrenamientos_existentes = obtener_entrenamientos()
                 grid_entrenamientos.controls.clear()
                 for evento in entrenamientos_existentes:
@@ -219,10 +296,9 @@ def gestionar_entrenamientos(page: ft.Page):
         icon_color=ft.Colors.BLUE_400,
         icon_size=20,
         tooltip="Volver",
-        on_click=lambda e: go_back(page)  # Llamamos a la función para regresar
+        on_click=lambda e: go_back(page)
     )
 
-    # Campo de texto para buscar entrenamientos
     search_field = ft.TextField(
         hint_text="Filtrar por nombre de entrenamiento", 
         width=300, 
@@ -233,7 +309,7 @@ def gestionar_entrenamientos(page: ft.Page):
 
     btn_crear_entrenamiento = ft.ElevatedButton(
         "Crear entrenamiento",
-        on_click=mostrar_formulario_editar,  # Cambié a mostrar_formulario_editar en vez de mostrar_crear_entrenamiento
+        on_click=mostrar_formulario_crear,  
         color=ft.Colors.BLUE_600
     )
 
@@ -266,7 +342,6 @@ def gestionar_entrenamientos(page: ft.Page):
         spacing=10
     )
 
-    # Contenedor con el estilo visual similar al de login (gradiente)
     visual_container = ft.Container(
         content=main_container,
         gradient=ft.LinearGradient(colors=[ft.Colors.WHITE, ft.Colors.BLUE_200], begin=ft.alignment.top_center, end=ft.alignment.bottom_center),
