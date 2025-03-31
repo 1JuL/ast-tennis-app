@@ -1,16 +1,21 @@
 import flet as ft
 from models.Payment import Payment  # Ajusta la ruta según tu estructura de carpetas
 from utils.ConexionDB import api_client
-import datetime
+from datetime import datetime
+
+
+
+
 
 def gestionar_pagos_view(page: ft.Page):
+
    
     def getEstudiantes():
         """Consigue los estudiantes desde la api y se cargan en una lista retornada"""
         listaEstudiantes = []
         response = api_client.get("personas")
         for usuario in response:
-            if usuario["rol"] == "Estudiante" or usuario["rol"] == "Usuario" :
+            if usuario["rol"] == "Estudiante" or usuario["rol"] == "usuario" :
                 listaEstudiantes.append(usuario)
         return listaEstudiantes
 
@@ -23,18 +28,49 @@ def gestionar_pagos_view(page: ft.Page):
             options.append(ft.DropdownOption(key=student["id"], content=ft.Text(value=f"{student["nombre"]} {student["apellido"]}")))
         return options
     
+    def eliminarPago(idPago):
+        
+        dlg_aviso = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("Eliminar pago"),
+            content=ft.Text("Pago eliminado exitósamente"),
+            actions=[
+                ft.TextButton("Aceptar", on_click=lambda _: page.close(dlg_aviso)),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END)
+        api_client.delete(f"pagos/{idPago}")
+        page.open(dlg_aviso)
+        grid_pagos.update()
+        
+    
+ 
 
     def getPagos(id):
         """Se piden los pagos de la persona mediante su id y se cargan en el gridView"""
+        pagosUsuario = [] # en este arreglo se cargarán los objetos tipo Payment del usuario
+
+        dlg_aviso = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("Aviso"),
+            content=ft.Text("No se encontraron pagos para este usuario."),
+            actions=[
+                ft.TextButton("Aceptar", on_click=lambda _: page.close(dlg_aviso)),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END)
+        
         try:
             pagos = api_client.get(f"pagos/usuario/{id}")
-            pagosUsuario = [] # en este arreglo se cargarán los objetos tipo Payment del usuario
+            print(pagos)
             for pago in pagos:
-                pagosUsuario.append(Payment(pago["id"],pago["personalID"], pago["monto"], pago["fecha"], pago["estado"]))
+                pagosUsuario.append(Payment(pago["id"],pago["personalID"], float(pago["monto"]), datetime.strptime(pago['fecha'], '%Y-%m-%d') , pago["estado"]))
+
+            print(pagosUsuario)
             cargar_pagos(pagosUsuario)
         except:
-            print("error al cargar los datos")
-
+            page.open(dlg_aviso)
+            grid_pagos.clean()
+            grid_pagos.update()
+            
 
     def crear_card_pago(pago: Payment):
         """ retorna la tarjeta de un pago """
@@ -42,19 +78,34 @@ def gestionar_pagos_view(page: ft.Page):
             content=ft.Container(
                 content=ft.Column(
                     [
-                        ft.Text(f"ID: {pago.ID}", weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
-                        ft.Text(f"ID Persona: {pago.personaId}"),
-                        ft.Text(f"Monto: ${pago.monto:.2f}"),
-                        ft.Text(f"Fecha: {pago.fecha}"),
+                        ft.Text(f"ID: {pago.ID}", weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK, selectable=True),
+                        ft.Text(f"ID Persona: {pago.personaId}", selectable=True, color=ft.Colors.BLACK),
+                        ft.Text(f"Monto: ${pago.monto:.2f}", color=ft.Colors.BLACK),
+                        ft.Text(f"Fecha: {pago.fecha}", color=ft.Colors.BLACK),
                         ft.Text(
                             f"Estado: {pago.estado}",
-                            color=ft.Colors.AMBER_500 if pago.estado == 'Pendiente' else ft.Colors.GREEN_500
+                            color=ft.Colors.AMBER_500 if pago.estado == 'Pendiente' else ft.Colors.GREEN_500,
+                        ),
+                        ft.Row(
+                            alignment=ft.MainAxisAlignment.END,
+                            controls=[
+                                ft.PopupMenuButton(
+                                    icon=ft.icons.MORE_VERT,
+                                    items=[
+                                        ft.PopupMenuItem(
+                                            text="Eliminar",
+                                            icon=ft.Icons.DELETE,
+                                            on_click= lambda _: eliminarPago(pago.ID)
+                                        )
+                                    ],
+                                )
+                            ]
                         )
                     ],
                     spacing=5,
                 ),
                 padding=10,
-                bgcolor=ft.Colors.SURFACE,
+                bgcolor=ft.Colors.GREY_50,
                 border_radius=10,
                 shadow=ft.BoxShadow(blur_radius=5, color=ft.Colors.BLACK12),
                 border=ft.border.all(2, ft.Colors.AMBER_500 if pago.estado == 'Pendiente' else ft.Colors.GREEN_500),
@@ -68,16 +119,30 @@ def gestionar_pagos_view(page: ft.Page):
         grid_pagos.controls.clear()
         for pago in pagos:
             grid_pagos.controls.append(crear_card_pago(pago))
+        grid_pagos.update()
     
-    def registrar_pago(e):
-        # Aquí puedes manejar la lógica para guardar los datos, etc.
-        api_client.post("pagos/", )
+    def registrar_pago(lista):
+        """Genera una peticion de creacion de pago"""
+        data = {
+        "personalID": lista[0],
+        "monto": lista[1],
+        "fecha": lista[2],
+        "estado": lista[3]
+        }
+        print(data)
+        api_client.post("pagos/",data=data)
         # Cerramos el diálogo después de registrar
         page.close(dialogReg)
+        getPagos(lista[0])
+
     
-    def registrar_pago_id(e):
-        # Aquí puedes manejar la lógica para guardar los datos, etc.
-        api_client.post("pagos/", )
+    def registrar_pago_id(idPago):
+
+        data = {
+            "id": idPago,
+            "estado": "Pagado"
+        }
+        api_client.put(f"pagos/{idPago}", data=data)
         # Cerramos el diálogo después de registrar
         page.close(dialogRegId)
     
@@ -88,8 +153,6 @@ def gestionar_pagos_view(page: ft.Page):
 
     def open_date_picker(e):
         page.open(ft.DatePicker(
-                    first_date=datetime.datetime(year=2023, month=10, day=1),
-                    last_date=datetime.datetime(year=2024, month=10, day=1),
                     on_change=handle_change,
                 ))
 
@@ -124,6 +187,7 @@ def gestionar_pagos_view(page: ft.Page):
         controls=[toolbar_left, toolbar_right],
         alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
     )
+    
 
     grid_pagos = ft.GridView(
         expand=True,
@@ -142,7 +206,7 @@ def gestionar_pagos_view(page: ft.Page):
 
     fecha_input = ft.TextField(
         label="Fecha de Pago",
-        hint_text="dd/mm/aaaa",
+        hint_text="aaaa-mm-dd",
         read_only=True,
         width=300,
         on_click= open_date_picker
@@ -155,7 +219,6 @@ def gestionar_pagos_view(page: ft.Page):
         options=[
             ft.dropdown.Option("Pendiente"),
             ft.dropdown.Option("Pagado"),
-            ft.dropdown.Option("Cancelado"),
         ],
         width=300
     )
@@ -183,13 +246,13 @@ def gestionar_pagos_view(page: ft.Page):
             ),
             ft.TextButton(
                 "Registrar Pago",
-                on_click=registrar_pago
+                on_click=lambda e: registrar_pago([combo_registro.value, monto_input.value, fecha_input.value, estado_dropdown.value])
             ),
         ],
         # Puedes ajustar el ancho máximo si deseas:
         # width=400
     )
-    input_id = ft.TextField(label="Monto", hint_text="Ingrese el monto del pago", width=300)
+    input_id = ft.TextField(label="Id pago", hint_text="Ingrese el ID del pago", width=300)
 
 
     dialogRegId = ft.AlertDialog(
@@ -212,7 +275,7 @@ def gestionar_pagos_view(page: ft.Page):
             ),
             ft.TextButton(
                 "Registrar Pago",
-                on_click=registrar_pago_id
+                on_click=lambda _: registrar_pago_id(input_id.value)
             ),
         ],
         # Puedes ajustar el ancho máximo si deseas:
