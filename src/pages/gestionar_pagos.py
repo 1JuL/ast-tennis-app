@@ -249,8 +249,7 @@ def gestionar_pagos_view(page: ft.Page):
                 on_click=lambda e: registrar_pago([combo_registro.value, monto_input.value, fecha_input.value, estado_dropdown.value])
             ),
         ],
-        # Puedes ajustar el ancho máximo si deseas:
-        # width=400
+
     )
     input_id = ft.TextField(label="Id pago", hint_text="Ingrese el ID del pago", width=300)
 
@@ -278,8 +277,6 @@ def gestionar_pagos_view(page: ft.Page):
                 on_click=lambda _: registrar_pago_id(input_id.value)
             ),
         ],
-        # Puedes ajustar el ancho máximo si deseas:
-        # width=400
     )
 
 
