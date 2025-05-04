@@ -82,6 +82,14 @@ def visualizar_torneos_view(page: ft.Page):
         for entrenamiento in filtered_entrenamientos:
             grid_entrenamientos.controls.append(crear_card_entrenamiento(entrenamiento))
         page.update()
+    
+    # Función para volver al menú o la vista anterior
+    def go_back(page):
+        if hasattr(page, "on_back"):
+            page.on_back()
+        else:
+            page.clean()
+            page.update()
 
     # Barra de herramientas
     btn_volver = ft.IconButton(
@@ -93,10 +101,11 @@ def visualizar_torneos_view(page: ft.Page):
     )
 
     search_field = ft.TextField(
-        hint_text="Filtrar por nombre de entrenamiento",
-        width=300,
-        color=ft.Colors.WHITE
-    )
+    hint_text="Filtrar por nombre de entrenamiento",
+    width=300,
+    color=ft.Colors.BLACK,  # color del texto ingresado
+    hint_style=ft.TextStyle(color=ft.Colors.BLACK54),  # color del placeholder
+)
 
     btn_buscar = ft.ElevatedButton("Buscar", on_click=buscar_entrenamientos)
 

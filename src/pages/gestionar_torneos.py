@@ -318,10 +318,11 @@ def gestionar_torneos(page: ft.Page):
     )
 
     search_field = ft.TextField(
-        hint_text="Filtrar por nombre de torneo",
-        width=300,
-        color=ft.Colors.WHITE
-    )
+    hint_text="Filtrar por nombre de entrenamiento",
+    width=300,
+    color=ft.Colors.BLACK,  # color del texto ingresado
+    hint_style=ft.TextStyle(color=ft.Colors.BLACK54),  # color del placeholder
+)
 
     btn_buscar = ft.ElevatedButton("Buscar", on_click=buscar_torneos)
 

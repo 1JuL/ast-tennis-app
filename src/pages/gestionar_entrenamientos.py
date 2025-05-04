@@ -134,6 +134,7 @@ def gestionar_entrenamientos(page: ft.Page):
     # Función de búsqueda
     def buscar_entrenamientos(e):
         filtro = search_field.value.lower()
+        
         filtered_entrenamientos = [entrenamiento for entrenamiento in entrenamientos_existentes if filtro in entrenamiento["nombre"].lower()]
 
         # Limpiar y agregar tarjetas filtradas
@@ -371,10 +372,11 @@ def gestionar_entrenamientos(page: ft.Page):
     )
 
     search_field = ft.TextField(
-        hint_text="Filtrar por nombre de entrenamiento",
-        width=300,
-        color=ft.Colors.WHITE
-    )
+    hint_text="Filtrar por nombre de entrenamiento",
+    width=300,
+    color=ft.Colors.BLACK,  # color del texto ingresado
+    hint_style=ft.TextStyle(color=ft.Colors.BLACK54),  # color del placeholder
+)
 
     btn_buscar = ft.ElevatedButton("Buscar", on_click=buscar_entrenamientos)
 
