@@ -1,86 +1,128 @@
 import flet as ft
-from models.event import Event
-from models.event_type import Event_Type
+from utils.ConexionDB import api_client  # Asegúrate de tener la configuración correcta para api_client
 
 def visualizar_torneos_view(page: ft.Page):
-    # --- Creación de la barra de herramientas ---
-    combo = ft.Dropdown(
-        options=[
-            ft.dropdown.Option("Opción 1"),
-            ft.dropdown.Option("Opción 2"),
-            ft.dropdown.Option("Opción 3"),
-        ],
-        hint_text="Seleccionar opción"
+    entrenamientos_simulados = []  # Lista donde almacenaremos los entrenamientos filtrados (tipo == 2)
+
+    # Función para crear tarjeta de entrenamiento
+    def crear_card_entrenamiento(entrenamiento):
+        # Obtener el profesor ID del entrenamiento
+        profesor_id = entrenamiento.get('profesorID')
+
+        # Buscar el nombre del profesor usando el profesorID
+        profesor = "Desconocido"
+        if profesor_id:
+            # Buscar el profesor en la lista de personas usando su ID
+            profesor = obtener_nombre_profesor_por_id(profesor_id)
+
+        # Crear los botones de Modificar y Eliminar
+        return ft.Card(
+            content=ft.Container(
+                content=ft.Column(
+                    [
+                        ft.Text(entrenamiento["nombre"], size=20, weight="bold"),
+                        ft.Text(f"Fecha: {entrenamiento['fecha']}"),
+                        ft.Text(f"Hora: {entrenamiento['hora']}"),
+                        
+                    ],
+                    spacing=10
+                ),
+                padding=20,
+                bgcolor=ft.Colors.WHITE,
+                border_radius=8,
+                shadow=ft.BoxShadow(blur_radius=10, color=ft.Colors.BLACK12)
+            ),
+            elevation=3,
+            width=300
+        )
+
+    # Función para obtener el nombre del profesor usando el profesorID
+    def obtener_nombre_profesor_por_id(profesor_id):
+        try:
+            response = api_client.get(f"personas/{profesor_id}")  # Obtener profesor por su ID desde la API
+            if response:
+                return response.get('nombre', 'Desconocido')
+            return "Desconocido"
+        except Exception as e:
+            print(f"Error al obtener el profesor: {e}")
+            return "Desconocido"
+
+    # Función para obtener los entrenamientos con tipo == 2
+    def obtener_entrenamientos_tipo_2():
+        try:
+            response = api_client.get("eventos")  # Asumimos que la ruta es /eventos
+            entrenamientos = [entrenamiento for entrenamiento in response if entrenamiento['tipo'] == 1]
+            return entrenamientos
+        except Exception as e:
+            print(f"Error al obtener los eventos: {e}")
+            return []
+
+    # Función para cargar los entrenamientos
+    entrenamientos_existentes = obtener_entrenamientos_tipo_2()
+
+    # Crear las tarjetas con los entrenamientos tipo 2
+    grid_entrenamientos = ft.GridView(
+        expand=True,
+        max_extent=250,
+        runs_count=3,
+        spacing=10,
+        run_spacing=10,
     )
+
+    for entrenamiento in entrenamientos_existentes:
+        grid_entrenamientos.controls.append(crear_card_entrenamiento(entrenamiento))
+
+    # Función de búsqueda
+    def buscar_entrenamientos(e):
+        filtro = search_field.value.lower()
+        filtered_entrenamientos = [entrenamiento for entrenamiento in entrenamientos_existentes if filtro in entrenamiento["nombre"].lower()]
+
+        # Limpiar y agregar tarjetas filtradas
+        grid_entrenamientos.controls.clear()
+        for entrenamiento in filtered_entrenamientos:
+            grid_entrenamientos.controls.append(crear_card_entrenamiento(entrenamiento))
+        page.update()
+
+    # Barra de herramientas
     btn_volver = ft.IconButton(
-        icon=ft.Icons.ARROW_BACK,
+        icon=ft.icons.ARROW_BACK,
         icon_color=ft.Colors.BLUE_400,
         icon_size=20,
         tooltip="Volver",
-        on_click=lambda e: page.on_back() if hasattr(page, "on_back") else None
+        on_click=lambda e: go_back(page)
     )
-    btn_buscar = ft.ElevatedButton("Buscar", on_click=lambda e: print("Buscar"))
+
+    search_field = ft.TextField(
+        hint_text="Filtrar por nombre de entrenamiento",
+        width=300,
+        color=ft.Colors.WHITE
+    )
+
+    btn_buscar = ft.ElevatedButton("Buscar", on_click=buscar_entrenamientos)
 
     toolbar_left = ft.Row(
-        controls=[btn_volver, combo, btn_buscar],
+        controls=[btn_volver, search_field, btn_buscar],
         alignment=ft.MainAxisAlignment.START
     )
+
     toolbar = ft.Row(
         controls=[toolbar_left],
         alignment=ft.MainAxisAlignment.SPACE_BETWEEN
     )
 
-    # --- Creación de la cuadrícula para torneos ---
-    grid_torneos = ft.GridView(
-        expand=True,
-        max_extent=250,
-        runs_count=3,  # Cantidad de columnas en la cuadrícula
-        spacing=10,
-        run_spacing=10,
-    )
-
-    # Contenedor principal que une la barra y la cuadrícula.
     main_container = ft.Column(
-        controls=[toolbar, grid_torneos],
+        controls=[toolbar, grid_entrenamientos],
         spacing=10
     )
 
-    # --- Función interna para crear la tarjeta de un torneo ---
-    def crear_card_torneo(torneo: Event, torneo_info: Event_Type):
-        return ft.Card(
-            content=ft.Container(
-                content=ft.Column(
-                    [
-                        ft.Text(f"Nombre: {torneo.nombre}", weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
-                        ft.Text(f"Fecha: {torneo.fecha}"),
-                        ft.Text(f"Hora: ${torneo.hora}"),
-                        ft.Text(f"Podio: ${torneo_info.podio}"),
-                    ],
-                    spacing=5,
-                ),
-                padding=10,
-                bgcolor=ft.Colors.BLACK,
-                border_radius=10,
-                shadow=ft.BoxShadow(blur_radius=5, color=ft.Colors.BLACK12),
-            ),
-            elevation=2,
-            height=30
-        )
+    visual_container = ft.Container(
+        content=main_container,
+        gradient=ft.LinearGradient(colors=[ft.Colors.WHITE, ft.Colors.BLUE_200], begin=ft.alignment.top_center, end=ft.alignment.bottom_center),
+        expand=True,
+    )
 
-    # --- Función interna para cargar torneos en la cuadrícula ---
-    def cargar_torneos(torneos, event_types):
-        grid_torneos.controls.clear()
-        for event_type in event_types:
-            if event_type.tipo == 1:
-                for torneo in torneos:
-                    if torneo.ID == event_type.eventoID:
-                        grid_torneos.controls.append(crear_card_torneo(torneo, event_type))
-        page.update()
+    return visual_container
 
-    # Se adjunta la función de carga al contenedor para poder llamarla externamente.
-    main_container.cargar_torneos = cargar_torneos
-
-    return main_container
 
 
 Visualizar_torneos = visualizar_torneos_view

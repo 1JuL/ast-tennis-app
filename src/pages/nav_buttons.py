@@ -48,6 +48,12 @@ def nav_buttons(page: ft.Page, show_main_menu):
                     on_click=lambda e: go_to_view(Gestionar_torneos)
                 ),
                 ft.ElevatedButton(
+                    text="Visualizar Torneos",  # Botón para la nueva vista
+                    width=250,
+                    bgcolor=ft.Colors.BLACK,
+                    on_click=lambda e: go_to_view(Visualizar_torneos)  # Llama a la vista de entrenamientos
+                ),
+                ft.ElevatedButton(
                     text="Gestionar Entrenamientos",  # Botón para la nueva vista
                     width=250,
                     bgcolor=ft.Colors.BLACK,

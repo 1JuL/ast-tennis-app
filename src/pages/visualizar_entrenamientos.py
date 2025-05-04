@@ -1,42 +1,31 @@
 import flet as ft
-from utils.ConexionDB import api_client  # Asegúrate de que el cliente de la API esté disponible
-import requests
+from utils.ConexionDB import api_client  # Asegúrate de tener la configuración correcta para api_client
 
 def visualizar_entrenamientos(page: ft.Page):
 
-    # Función para obtener los entrenamientos desde la API
-    def obtener_torneos():
-        try:
-            # Realiza la solicitud GET para obtener los eventos
-            response = api_client.get("eventos")  # Asumimos que la ruta es /eventos
-            return response  # La respuesta será una lista de eventos
-        except requests.exceptions.RequestException as e:
-            print(f"Error al obtener los eventos: {e}")
-            return []  # En caso de error, retornamos una lista vacía
+    entrenamientos_simulados = []  # Lista donde almacenaremos los entrenamientos filtrados (tipo == 2)
 
-    # Función para obtener el tipo de evento (incluyendo el profesor) desde la API
-    def obtener_tipo_evento(tipo_id):
-        try:
-            # Realiza la solicitud GET para obtener el tipo de evento, pasando el tipo como parámetro
-            response = api_client.get(f"eventosTipos/{tipo_id}")  # Ruta para obtener tipo de evento por ID
-            return response  # Devuelve el tipo de evento, que incluirá el profesorID
-        except requests.exceptions.RequestException as e:
-            print(f"Error al obtener tipo de evento: {e}")
-            return None  # En caso de error, retornamos None
+    # Función para crear tarjeta de entrenamiento
+    def crear_card_entrenamiento(entrenamiento):
+        # Obtener el profesor ID del entrenamiento
+        profesor_id = entrenamiento.get('profesorID')
 
-    # Cargar los eventos desde la API
-    eventos = obtener_torneos()
+        # Buscar el nombre del profesor usando el profesorID
+        profesor = "Desconocido"
+        if profesor_id:
+            # Buscar el profesor en la lista de personas usando su ID
+            profesor = obtener_nombre_profesor_por_id(profesor_id)
 
-    # Función para crear tarjeta de evento
-    def crear_card_entrenamiento(evento):
+        # Crear los botones de Modificar y Eliminar
         return ft.Card(
             content=ft.Container(
                 content=ft.Column(
                     [
-                        ft.Text(evento["nombre"], size=20, weight="bold"),
-                        ft.Text(f"Fecha: {evento['fecha']}"),
-                        ft.Text(f"Hora: {evento['hora']}"),
-                        ft.Text(f"Profesor: {evento['profesor']}"),  # Mostramos el nombre del profesor
+                        ft.Text(entrenamiento["nombre"], size=20, weight="bold"),
+                        ft.Text(f"Fecha: {entrenamiento['fecha']}"),
+                        ft.Text(f"Hora: {entrenamiento['hora']}"),
+                        ft.Text(f"Categoría: {entrenamiento['categoria']}"),
+                        ft.Text(f"Profesor: {profesor}"),
                     ],
                     spacing=10
                 ),
@@ -49,62 +38,72 @@ def visualizar_entrenamientos(page: ft.Page):
             width=300
         )
 
-    # Filtro de búsqueda
-    search_field = ft.TextField(hint_text="Filtrar por nombre de evento", width=300, color=ft.Colors.WHITE)
+    # Función para obtener el nombre del profesor usando el profesorID
+    def obtener_nombre_profesor_por_id(profesor_id):
+        try:
+            response = api_client.get(f"personas/{profesor_id}")  # Obtener profesor por su ID desde la API
+            if response:
+                return response.get('nombre', 'Desconocido')
+            return "Desconocido"
+        except Exception as e:
+            print(f"Error al obtener el profesor: {e}")
+            return "Desconocido"
+
+    # Función para obtener los entrenamientos con tipo == 2
+    def obtener_entrenamientos_tipo_2():
+        try:
+            response = api_client.get("eventos")  # Asumimos que la ruta es /eventos
+            entrenamientos = [entrenamiento for entrenamiento in response if entrenamiento['tipo'] == 2]
+            return entrenamientos
+        except Exception as e:
+            print(f"Error al obtener los eventos: {e}")
+            return []
+
+    # Función para cargar los entrenamientos
+    entrenamientos_existentes = obtener_entrenamientos_tipo_2()
+
+    # Crear las tarjetas con los entrenamientos tipo 2
+    grid_entrenamientos = ft.GridView(
+        expand=True,
+        max_extent=250,
+        runs_count=3,
+        spacing=10,
+        run_spacing=10,
+    )
+
+    for entrenamiento in entrenamientos_existentes:
+        grid_entrenamientos.controls.append(crear_card_entrenamiento(entrenamiento))
 
     # Función de búsqueda
     def buscar_entrenamientos(e):
         filtro = search_field.value.lower()
-        filtered_entrenamientos = [evento for evento in eventos if filtro in evento["nombre"].lower()]
-        
+        filtered_entrenamientos = [entrenamiento for entrenamiento in entrenamientos_existentes if filtro in entrenamiento["nombre"].lower()]
+
         # Limpiar y agregar tarjetas filtradas
         grid_entrenamientos.controls.clear()
         for entrenamiento in filtered_entrenamientos:
             grid_entrenamientos.controls.append(crear_card_entrenamiento(entrenamiento))
         page.update()
 
-    # Crear Grid de eventos
-    grid_entrenamientos = ft.GridView(
-        expand=True,
-        max_extent=350,
-        runs_count=2,  # Dos columnas
-        spacing=10,
-        run_spacing=10,
-    )
-
-    # Inicialmente se muestran todos los eventos
-    for evento in eventos:
-        # Asignamos el tipo de evento con ID 2
-        evento["tipo"] = 2  # Aseguramos que el tipo de evento sea 2
-        
-        # Obtenemos el tipo de evento (incluyendo el profesor)
-        tipo_evento = obtener_tipo_evento(evento["tipo"])
-        
-        if tipo_evento:
-            # Suponemos que tipo_evento tiene el campo "profesorID", lo obtenemos
-            profesor_id = tipo_evento.get("profesorID", "")
-            
-            # Asignamos el nombre del profesor si se encuentra en el tipo de evento
-            evento["profesor"] = profesor_id.split(' ')[0]  # Extraemos el nombre del profesor, suponiendo el formato adecuado
-            
-            # Agregamos el evento con la información completa
-            grid_entrenamientos.controls.append(crear_card_entrenamiento(evento))
-
     # Barra de herramientas
     btn_volver = ft.IconButton(
-        icon=ft.Icons.ARROW_BACK,
+        icon=ft.icons.ARROW_BACK,
         icon_color=ft.Colors.BLUE_400,
         icon_size=20,
         tooltip="Volver",
-        on_click=lambda e: go_back(page)  # Llamamos a la función para regresar
+        on_click=lambda e: go_back(page)
+    )
+
+    search_field = ft.TextField(
+        hint_text="Filtrar por nombre de entrenamiento",
+        width=300,
+        color=ft.Colors.WHITE
     )
 
     btn_buscar = ft.ElevatedButton("Buscar", on_click=buscar_entrenamientos)
 
-    btn_inicio = ft.ElevatedButton("Volver al inicio", on_click=lambda e: print("Volver al inicio"), color=ft.Colors.TEAL_600)
-
     toolbar_left = ft.Row(
-        controls=[btn_volver, search_field, btn_buscar, btn_inicio],
+        controls=[btn_volver, search_field, btn_buscar],
         alignment=ft.MainAxisAlignment.START
     )
 
@@ -113,13 +112,11 @@ def visualizar_entrenamientos(page: ft.Page):
         alignment=ft.MainAxisAlignment.SPACE_BETWEEN
     )
 
-    # Contenedor principal
     main_container = ft.Column(
         controls=[toolbar, grid_entrenamientos],
         spacing=10
     )
 
-    # Contenedor con el estilo visual similar al de login (gradiente)
     visual_container = ft.Container(
         content=main_container,
         gradient=ft.LinearGradient(colors=[ft.Colors.WHITE, ft.Colors.BLUE_200], begin=ft.alignment.top_center, end=ft.alignment.bottom_center),
@@ -128,13 +125,6 @@ def visualizar_entrenamientos(page: ft.Page):
 
     return visual_container
 
-# Función para regresar al menú principal
-def go_back(page):
-    if hasattr(page, "on_back"):
-        page.on_back()  # Llamamos a la función de regresar al menú
-    else:
-        page.clean()  # Limpiamos la página actual y volvemos a cargar el menú
-        page.update()
 
 Visualizar_entrenamientos = visualizar_entrenamientos
 
