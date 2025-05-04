@@ -385,7 +385,7 @@ def gestionar_entrenamientos(page: ft.Page):
     )
 
     toolbar_left = ft.Row(
-        controls=[btn_volver, search_field, btn_buscar, btn_crear_entrenamiento, btn_inicio],
+        controls=[btn_volver, search_field, btn_buscar, btn_crear_entrenamiento],
         alignment=ft.MainAxisAlignment.START
     )
 
