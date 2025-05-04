@@ -333,7 +333,7 @@ def gestionar_torneos(page: ft.Page):
 
 
     toolbar_left = ft.Row(
-        controls=[btn_volver, search_field, btn_buscar, btn_crear_torneo, btn_inicio],
+        controls=[btn_volver, search_field, btn_buscar, btn_crear_torneo],
         alignment=ft.MainAxisAlignment.START
     )
 
