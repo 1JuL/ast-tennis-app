@@ -2,6 +2,8 @@ import flet as ft
 from models.Payment import Payment  # Ajusta la ruta según tu estructura de carpetas
 from utils.ConexionDB import api_client
 from datetime import datetime
+from flet import KeyboardType
+
 
 
 
@@ -25,7 +27,8 @@ def gestionar_pagos_view(page: ft.Page):
         options = []
         studentsList = getEstudiantes()
         for student in studentsList:
-            options.append(ft.DropdownOption(key=student["id"], content=ft.Text(value=f"{student["nombre"]} {student["apellido"]}")))
+            usuario = f"{student["nombre"]} {student["apellido"]}"
+            options.append(ft.DropdownOption(key=student["id"], content=ft.Text(value=usuario)))
         return options
     
     def eliminarPago(idPago):
@@ -42,8 +45,6 @@ def gestionar_pagos_view(page: ft.Page):
         page.open(dlg_aviso)
         grid_pagos.update()
         
-    
- 
 
     def getPagos(id):
         """Se piden los pagos de la persona mediante su id y se cargan en el gridView"""
@@ -121,30 +122,87 @@ def gestionar_pagos_view(page: ft.Page):
             grid_pagos.controls.append(crear_card_pago(pago))
         grid_pagos.update()
     
+    def generar_alerta(titulo:str, mensaje:str):
+        dlg_aviso = ft.AlertDialog(
+            modal=True,
+            title=ft.Text(titulo),
+            content=ft.Text(mensaje),
+            actions=[
+                ft.TextButton("Aceptar", on_click=lambda _: page.close(dlg_aviso)),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END)
+        
+        return dlg_aviso
+
     def registrar_pago(lista):
         """Genera una peticion de creacion de pago"""
+
+        # Ya sé que esto se ve horrible pero me rehuso a usar chat para mejorar esta mierda, prefiero esperar a que
+        # mi poderoso y sexy cerebro se idee otra forma más optima pa validar esto, por ahora se queda así, total, es mi módulo, puñetas
+        if lista[0].strip() == '':
+            page.open(generar_alerta("Error", "Debe ingresar un ID"))
+            return
+        if lista[1].strip() == '':
+            page.open(generar_alerta("Error", "Debe ingresar un monto"))
+            return
+        if lista[2].strip() == '':
+            page.open(generar_alerta("Error", "Debe ingresar una fecha"))
+            return
+        if lista[3].strip() == '':
+            page.open(generar_alerta("Error", "Debe seleccionar un estado"))
+            return
+        
+        # si el usuario es serio y no mete burradas se crea el diccionario con los valores
         data = {
         "personalID": lista[0],
         "monto": lista[1],
         "fecha": lista[2],
         "estado": lista[3]
         }
-        print(data)
-        api_client.post("pagos/",data=data)
-        # Cerramos el diálogo después de registrar
-        page.close(dialogReg)
-        getPagos(lista[0])
+    
+        try:
+            print(data)
+            api_client.post("pagos/",data=data)
+            alerta = generar_alerta("Registrar pago", "Pago registrado correctamente!")
+            page.open(alerta)
+            getPagos(lista[0])
+        except :
+            alerta = generar_alerta("Error", "No se pudo generar el pago")
+            page.open(alerta)
+        finally:
+            # Cerramos el diálogo después de registrar
+            page.close(dialogReg)
+            combo_registro.value = None
+            monto_input.value = ''
+            fecha_input.value = ''
+            estado_dropdown.value = None
+            
 
     
     def registrar_pago_id(idPago):
+        """ Dado un id de un pago se cambia el estado de ese pago a pagado en caso de que el estado anterior haya sido pendiente"""
 
+        if idPago == '':
+            page.open(generar_alerta("Error", "Debe ingresar el id del pago deseado!"))
+            return
+        
         data = {
             "id": idPago,
             "estado": "Pagado"
         }
-        api_client.put(f"pagos/{idPago}", data=data)
-        # Cerramos el diálogo después de registrar
-        page.close(dialogRegId)
+
+        try:
+            api_client.put(f"pagos/{idPago}", data=data)
+            conf = generar_alerta("Registrar pago", "Pago registrado como \"Pagado\" exitosamente")
+            page.open(conf)
+        except:
+            error = generar_alerta("Error", "No se pudo cambiar el estado del pago")
+            page.open(error)
+        finally:
+            # Cerramos el diálogo después de registrar
+            page.close(dialogRegId)
+            input_id.value = ''
+
     
     def handle_change(e: ft.ControlEvent):
         if e.data is not None:  # Si se seleccionó una fecha
@@ -196,12 +254,14 @@ def gestionar_pagos_view(page: ft.Page):
         spacing=10,
         run_spacing=10,
     )
+    
 
     # controles para modal registro de pago
     monto_input = ft.TextField(
         label="Monto",
         hint_text="Ingrese el monto del pago",
-        width=300
+        width=300,
+        keyboard_type = KeyboardType.NUMBER
     )
 
     fecha_input = ft.TextField(
@@ -210,7 +270,6 @@ def gestionar_pagos_view(page: ft.Page):
         read_only=True,
         width=300,
         on_click= open_date_picker
-                
     )
 
     estado_dropdown = ft.Dropdown(
