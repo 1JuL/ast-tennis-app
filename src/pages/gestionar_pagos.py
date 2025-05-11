@@ -5,13 +5,7 @@ from datetime import datetime
 from flet import KeyboardType
 
 
-
-
-
-
-def gestionar_pagos_view(page: ft.Page):
-
-   
+def gestionar_pagos_view(page: ft.Page):   
     def getEstudiantes():
         """Consigue los estudiantes desde la api y se cargan en una lista retornada"""
         listaEstudiantes = []
@@ -227,7 +221,7 @@ def gestionar_pagos_view(page: ft.Page):
         icon_color=ft.Colors.BLUE_400,
         icon_size=20,
         tooltip="Volver",
-        on_click=lambda e: page.on_back() if hasattr(page, "on_back") else None
+        on_click=lambda e: page.go("/admin_menu")
     )
     btn_buscar = ft.ElevatedButton("Buscar", on_click=lambda e: getPagos(combo.value), bgcolor= ft.Colors.SURFACE)
     btn_registrar = ft.ElevatedButton("Registrar pago", on_click=lambda e: page.open(dialogReg), color=ft.Colors.GREEN_500, bgcolor= ft.Colors.SURFACE)
@@ -338,18 +332,25 @@ def gestionar_pagos_view(page: ft.Page):
         ],
     )
 
-
-    # Construcción del contenedor principal que une la barra de herramientas y el grid
-    main_container = ft.Container(
-        content=ft.Column(
+    main_column = ft.Column(
         controls=[toolbar, grid_pagos],
         spacing=10,
-        expand= True, 
-        ),
-        gradient= ft.LinearGradient(colors=[ft.Colors.WHITE, ft.Colors.BLUE_200], begin=ft.alignment.top_center, end=ft.alignment.bottom_center),
         expand=True,
     )
-    return main_container
+
+    # Wrap in one Container and return it
+    gestionar_pagos_container = ft.Container(
+        content=main_column,
+        gradient=ft.LinearGradient(
+            colors=[ft.Colors.WHITE, ft.Colors.BLUE_200],
+            begin=ft.alignment.top_center,
+            end=ft.alignment.bottom_center,
+        ),
+        expand=True,
+        padding=20,
+    )
+
+    return gestionar_pagos_container
 
 # Exportamos la función con el alias 'Gestionar_pagos'
 Gestionar_pagos = gestionar_pagos_view

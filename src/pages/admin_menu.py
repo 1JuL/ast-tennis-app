@@ -1,9 +1,6 @@
 import flet as ft
 import datetime
 import re
-from pages.gestionar_entrenamientos import Gestionar_entrenamientos
-from pages.gestionar_pagos import Gestionar_pagos
-from pages.gestionar_torneos import Gestionar_torneos
 from utils.ConexionDB import api_client
 from utils.global_state import auth_state
 
@@ -238,28 +235,19 @@ def close_dialog(page: ft.Page, dialog, on_close=None):
     dialog.open = False
     page.update()
     if on_close:
-        on_close()    
+        on_close()  
+
+def logout(page: ft.Page):
+    # Clear global auth state
+    auth_state.is_authenticated = False
+    auth_state.user = None
+    # Navigate away
+    page.go("/")
+    page.update()
 
 def admin_menu_view(page: ft.Page):
-    # Función para volver al menú principal
-    def go_back(e):
-        show_main_menu()
-
-    # Función para mostrar el layout completo (sidebar + contenido principal)
-    def show_main_menu():
-        page.clean()
-        page.controls = [layout]
-        page.update()
-
-    # Función genérica para navegar a una vista destino
-    def go_to_view(view_func):
-        page.clean()
-        page.on_back = go_back
-        nav_view = view_func(page)
-        page.controls = [nav_view]
-        page.update()
     
-        # Función para mostrar los detalles de una persona en un diálogo
+    # Función para mostrar los detalles de una persona en un diálogo
     def show_person_details(person):
         details = (
             f"Fecha de nacimiento: {person.get('fechaNacimiento', '')}\n"
@@ -285,28 +273,47 @@ def admin_menu_view(page: ft.Page):
                 ft.ElevatedButton(
                     text="Gestionar Entrenamientos",
                     width=250,
-                    bgcolor=ft.Colors.BLACK,
-                    on_click=lambda e: go_to_view(lambda p: Gestionar_entrenamientos(p))
+                    on_click=lambda _: page.go("/gestionar_entrenamientos")
                 ),
-                ft.ElevatedButton(
-                    text="Gestionar Pagos",
-                    width=250,
-                    bgcolor=ft.Colors.BLACK,
-                    on_click=lambda e: go_to_view(lambda p: Gestionar_pagos(p))
-                ),
+                
                 ft.ElevatedButton(
                     text="Gestionar Torneos",
                     width=250,
-                    bgcolor=ft.Colors.BLACK,
-                    on_click=lambda e: go_to_view(lambda p: Gestionar_torneos(p))
+                    on_click=lambda _: page.go("/gestionar_torneos")
                 ),
-                ft.Divider(color=ft.Colors.WHITE54),
+                
                 ft.ElevatedButton(
-                    text="Salir",
+                    text="Gestionar Pagos",
                     width=250,
+                    on_click=lambda _: page.go("/gestionar_pagos")
+                ),
+                
+                ft.ElevatedButton(
+                    text="Gestionar Pagos (Usuario)",
+                    width=250,
+                    on_click=lambda _: page.go("/gestionar_pagos_user")
+                ),
+                
+                ft.ElevatedButton(
+                    text="Visualizar Entrenamientos",
+                    width=250,
+                    on_click=lambda _: page.go("/visualizar_entrenamientos")
+                ),
+                
+                ft.ElevatedButton(
+                    text="Visualizar Torneos",
+                    width=250,
+                    on_click=lambda _: page.go("/visualizar_torneos")
+                ),
+                
+                ft.Divider(color=ft.Colors.WHITE54),
+                
+                ft.ElevatedButton(
+                    "Logout",
                     bgcolor=ft.Colors.RED,
-                    on_click=lambda e: page.window.close()
-                )
+                    color=ft.Colors.WHITE,
+                    on_click=lambda e: logout(page)
+                ),
             ],
             spacing=10,
             alignment=ft.MainAxisAlignment.CENTER,
@@ -374,7 +381,7 @@ def admin_menu_view(page: ft.Page):
         welcome_name = logged_in_person.get("nombre", "Usuario")
     except Exception as ex:
         print("Error al obtener datos del usuario:", ex)
-        welcome_name = "Usuario"
+        welcome_name = "Administrador"
 
     # Obtener todas las personas mediante GET al endpoint "personas"
     try:
@@ -415,13 +422,13 @@ def admin_menu_view(page: ft.Page):
         expand=True,
         alignment=ft.alignment.center
     )
-
-    layout = ft.Row(
-        controls=[sidebar, main_content],
-        expand=True
-    )
     
-    return layout
+    return ft.Container(
+        expand=True,
+        content=ft.Column([
+            ft.Row(controls=[sidebar, main_content], expand=True),
+        ])
+    )
 
 Admin_menu = admin_menu_view
 __all__ = ["admin_menu"]

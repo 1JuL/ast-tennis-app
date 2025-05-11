@@ -518,11 +518,7 @@ def gestionar_entrenamientos(page: ft.Page):
             show_error_popup(f"Error al eliminar el entrenamiento: {e}")
 
     def go_back(page):
-        if hasattr(page, "on_back"):
-            page.on_back()
-        else:
-            page.clean()
-            page.update()
+        page.go("/admin_menu")
 
     # Initialize data
     profesores = obtener_profesores()

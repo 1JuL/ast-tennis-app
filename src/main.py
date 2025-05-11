@@ -1,155 +1,170 @@
 import flet as ft
-from pages.registration import Registration
-from pages.login import Login
-from pages.nav_buttons import nav_buttons
+
+from pages.gestionar_entrenamientos import Gestionar_entrenamientos
+from pages.gestionar_pagos import Gestionar_pagos
+from pages.gestionar_pagos_user import Gestionar_pagos_user
+from pages.gestionar_torneos import Gestionar_torneos
+from pages.login          import Login
+from pages.nav_buttons import Nav_buttons
+from pages.registration   import Registration
+from pages.add_user_info import Add_user_info
+from pages.admin_menu     import Admin_menu
+from pages.user_menu      import User_menu
+from pages.trainer_menu   import Trainer_menu
+from pages.visualizar_entrenamientos import Visualizar_entrenamientos
+from pages.visualizar_torneos import Visualizar_torneos
 
 def main(page: ft.Page):
-    page.title = "AST Tennis"
-    page.bgcolor = ft.Colors.WHITE
-    page.padding = 0
+    page.title               = "AST Tennis"
+    page.bgcolor             = ft.Colors.WHITE
+    page.padding             = 0
     page.horizontal_alignment = "stretch"
-    page.vertical_alignment = "stretch"
+    page.vertical_alignment   = "stretch"
 
-    def show_main_menu():
-        page.clean()
-        page.bgcolor = ft.Colors.WHITE
-        page.vertical_alignment = "stretch"
-        page.horizontal_alignment = "stretch"
-        # Permite que desde otras vistas se pueda volver al menú principal
-        page.on_back = show_main_menu
+    # --- on_route_change handler ---
+    def route_change(e):
+        # Clear out old views
+        page.views.clear()
 
-        main_menu = ft.Container(
-            content= ft.Row(
+        # Always show the home view
+        page.views.append(
+            ft.View(
+                route="/",
+                controls=build_home()
+            )
+        )
+        # Conditionally add the matched view on top
+        if page.route == "/login":
+            page.views.append(
+                ft.View(
+                    route="/login",
+                    controls=[ Login(page) ]
+                )
+            )
+        elif page.route == "/register":
+            page.views.append(
+                ft.View(
+                    route="/register",
+                    controls=[ Registration(page) ]
+                )
+            )
+        elif page.route == "/add_user_info":
+            page.views.append(
+                ft.View(
+                    route="/add_user_info", 
+                    controls=[ Add_user_info(page) ]
+                )
+            )
+        elif page.route == "/admin_menu":
+            page.views.append(
+                ft.View(
+                    route="/admin_menu",
+                    controls=[ Admin_menu(page) ]
+                )
+            )
+        elif page.route == "/user_menu":
+            page.views.append(
+                ft.View(
+                    route="/user_menu",
+                    controls=[ User_menu(page) ]
+                )
+            )
+        elif page.route == "/trainer_menu":
+            page.views.append(
+                ft.View(
+                    route="/trainer_menu",
+                    controls=[ Trainer_menu(page) ]
+                )
+            )
+        elif page.route == "/gestionar_entrenamientos":
+            page.views.append(
+                ft.View(
+                    route="/gestionar_entrenamientos",
+                    controls=[ Gestionar_entrenamientos(page) ]
+                )
+            )
+        elif page.route == "/gestionar_torneos":
+            page.views.append(
+                ft.View(
+                    route="/gestionar_torneos",
+                    controls=[ Gestionar_torneos(page) ]
+                )
+            )
+        elif page.route == "/gestionar_pagos":
+            page.views.append(
+                ft.View(
+                    route="/gestionar_pagos",
+                    controls=[ Gestionar_pagos(page) ]
+                )
+            )
+        elif page.route == "/gestionar_pagos_user":
+            page.views.append(
+                ft.View(
+                    route="/gestionar_pagos_user",
+                    controls=[ Gestionar_pagos_user(page) ]
+                )
+            )
+        elif page.route == "/visualizar_entrenamientos":
+            page.views.append(
+                ft.View(
+                    route="/visualizar_entrenamientos",
+                    controls=[ Visualizar_entrenamientos(page) ]
+                )
+            )
+        elif page.route == "/visualizar_torneos":
+            page.views.append(
+                ft.View(
+                    route="/visualizar_torneos",
+                    controls=[ Visualizar_torneos(page) ]
+                )
+            )
+        elif page.route == "/nav_buttons":
+            page.views.append(
+                ft.View(
+                    route="/nav_buttons",
+                    controls=[ Nav_buttons(page) ]
+                )
+            )
+
+        page.update()
+
+    # --- on_view_pop handler (Back button) ---
+    def view_pop(view):
+        page.views.pop()              # remove current
+        top = page.views[-1]          # peek previous
+        page.go(top.route)            # navigate to it
+
+    page.on_route_change = route_change
+    page.on_view_pop     = view_pop
+
+    # --- home builder ---
+    def build_home():
+        return [
+            ft.AppBar(title=ft.Text("AST Tennis")),
+            ft.Row(
                 [
-                    # Imagen a la izquierda
                     ft.Container(
-                        content=ft.Image(
-                            src="./src/assets/ast-tennis-logo.png",
-                            width=350,
-                            height=350
-                        ),
+                        content=ft.Image(src="./src/assets/ast-tennis-logo.png", width=350, height=350),
                         expand=True
                     ),
-                    # Controles a la derecha
-                    ft.Container(
-                        content=ft.Column(
-                            [
-                                ft.Text(
-                                    "AST Tennis",
-                                    size=32,
-                                    text_align=ft.TextAlign.CENTER,
-                                    color=ft.Colors.BLACK,
-                                    style=ft.FontWeight.BOLD
-                                ),
-                                ft.Text(
-                                    "¿Que vamos a hacer hoy?",
-                                    size=16,
-                                    text_align=ft.TextAlign.CENTER,
-                                    color=ft.Colors.BLACK87
-                                ),
-                                ft.ElevatedButton(
-                                    text="Iniciar sesión",
-                                    height=50,
-                                    width=250,
-                                    color='#0F3BAC',
-                                    bgcolor='#FEF7FF',
-                                    style=ft.ButtonStyle(
-                                        shape=ft.RoundedRectangleBorder(radius=10),
-                                        elevation=5
-                                    ),
-                                    on_click=lambda _: go_to_login(),
-                                ),
-                                ft.ElevatedButton(
-                                    text="Registrarse",
-                                    height=50,
-                                    width=250,
-                                    color='#0F3BAC',
-                                    style=ft.ButtonStyle(
-                                        shape=ft.RoundedRectangleBorder(radius=10),
-                                        elevation=5
-                                    ),
-                                    bgcolor='#FEF7FF',
-                                    on_click=lambda _: go_to_registration()
-                                ),
-                                ft.ElevatedButton(
-                                    text="Ir a Navegación",
-                                    height=50,
-                                    width=250,
-                                    color='#0F3BAC',
-                                    style=ft.ButtonStyle(
-                                        shape=ft.RoundedRectangleBorder(radius=10),
-                                        elevation=5
-                                    ),
-                                    bgcolor='#FEF7FF',
-                                    on_click=lambda _: go_to_nav_buttons()  # Botón que va a la vista de nav_buttons
-                                ),
-                                ft.ElevatedButton(
-                                    text="Salir",
-                                    height=50,
-                                    width=250,
-                                    color='#B3261E',
-                                    style=ft.ButtonStyle(
-                                        shape=ft.RoundedRectangleBorder(radius=10),
-                                        elevation=5
-                                    ),
-                                    bgcolor = '#F9DEDC',
-                                    on_click=lambda _: page.window.close()
-                                )
-                            ],
-                            alignment=ft.MainAxisAlignment.CENTER,
-                            horizontal_alignment=ft.CrossAxisAlignment.CENTER
-                        ),
-                        expand=True
-                    )
+                    ft.Column(
+                        [
+                            ft.Text("¿Qué vamos a hacer hoy?", size=20),
+                            ft.ElevatedButton("Iniciar sesión", on_click=lambda _: page.go("/login")),
+                            ft.ElevatedButton("Registrarse",    on_click=lambda _: page.go("/register")),
+                            ft.ElevatedButton("Navegación",      on_click=lambda _: page.go("/nav_buttons")),
+                            ft.ElevatedButton("Salir",           bgcolor=ft.Colors.RED, on_click=lambda _: page.window.close()),
+                        ],
+                        alignment=ft.MainAxisAlignment.CENTER,
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        spacing=12
+                    ),
                 ],
-                alignment=ft.MainAxisAlignment.CENTER
-            ),
-            gradient= ft.LinearGradient(colors=[ft.Colors.WHITE, ft.Colors.BLUE_200], begin=ft.alignment.top_center, end=ft.alignment.bottom_center),
-            expand=True
-        )
-        page.controls = [main_menu]
-        page.update()
+                alignment=ft.MainAxisAlignment.CENTER,
+                expand=True
+            )
+        ]
 
-    def go_to_login():
-        page.clean()
-        page.bgcolor = ft.Colors.BLACK
-        page.vertical_alignment = "center"
-        page.horizontal_alignment = "center"
-        # Asignamos el callback para volver al menú principal
-        page.on_back = show_main_menu
+    page.go("/")
 
-        # Importamos la vista de login desde pages/login.py
-        login_view = Login(page)
-        page.controls = [login_view]
-        page.update()
-
-    def go_to_registration():
-        page.clean()
-        page.bgcolor = ft.Colors.WHITE
-        page.vertical_alignment = "center"
-        page.horizontal_alignment = "center"
-        # Asignamos el callback para volver al menú principal
-        page.on_back = show_main_menu
-
-        # Importamos la vista de registro desde pages/registration.py
-        reg_view = Registration(page)
-        page.controls = [reg_view]
-        page.update()
-    
-    def go_to_nav_buttons():
-        page.clean()
-        page.bgcolor = ft.Colors.WHITE
-        page.vertical_alignment = "center"
-        page.horizontal_alignment = "center"
-        # Asignamos el callback para volver al menú principal
-        page.on_back = show_main_menu
-
-        # Importamos la vista de nav_buttons
-        nav_view = nav_buttons(page, show_main_menu)
-        page.controls = [nav_view]
-        page.update()
-
-    # Mostrar inicialmente el menú principal
-    show_main_menu()
-
-ft.app(target=main, assets_dir='assets')
+ft.app(target=main, view=ft.AppView.WEB_BROWSER, assets_dir="assets")

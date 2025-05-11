@@ -1,144 +1,145 @@
 import flet as ft
-from utils.firebase import sign_in
-from utils.global_state import auth_state
-from pages.admin_menu import Admin_menu
+from utils.firebase        import sign_in
+from utils.global_state   import auth_state
+from utils.ConexionDB      import api_client
 
 def login_view(page: ft.Page):
-    # Definición de los campos de entrada para el login
+    # Input fields
     email_input = ft.TextField(
-        label="Correo", 
-        prefix_icon=ft.Icons.EMAIL, 
-        color= 'black',
+        label="Correo",
+        prefix_icon=ft.Icons.EMAIL,
+        color="black",
         label_style=ft.TextStyle(color=ft.Colors.BLUE_GREY_500),
         content_padding=ft.padding.only(bottom=15),
     )
     password_input = ft.TextField(
-        label="Contraseña", 
-        password=True, 
-        prefix_icon=ft.Icons.LOCK, 
-        color= ft.Colors.BLACK,
+        label="Contraseña",
+        password=True,
+        prefix_icon=ft.Icons.LOCK,
+        color=ft.Colors.BLACK,
         label_style=ft.TextStyle(color=ft.Colors.BLUE_GREY_500),
         content_padding=ft.padding.only(bottom=15),
     )
 
-    login_button = ft.ElevatedButton(
-        text="Iniciar Sesión",
-        height=50,
-        width=250,
-        color='#0F3BAC',
-        style=ft.ButtonStyle(
-            shape=ft.RoundedRectangleBorder(radius=10),
-            elevation=5
-        ),
-        bgcolor='#FEF7FF',
-        on_click=lambda e: handle_login(e)
-    )
-    back_button = ft.ElevatedButton("Volver", bgcolor="#ffcccc", color="red", width=250, on_click= lambda e: go_back(e))
-    
-    
-    # Spinner de carga
+    # Spinner
     spinner = ft.ProgressRing(visible=False)
-    
+
+    # Handlers
     def handle_login(e):
-        # Mostrar spinner de carga
         spinner.visible = True
         page.update()
-        
-        email = email_input.value
-        password = password_input.value
-        
-        # Realiza la autenticación
-        user = sign_in(email, password)
-        
-        # Ocultar spinner de carga
+
+        user = sign_in(email_input.value, password_input.value)
+
         spinner.visible = False
         page.update()
-        
+
         if user:
-            # Actualiza el estado global
             auth_state.is_authenticated = True
             auth_state.user = user
+            uid = user.get("localId")
+
+            # Fetch role
+            try:
+                personas = api_client.get(f"personas/uid/{uid}")
+                persona  = personas[0] if isinstance(personas, list) else personas
+                rol      = persona.get("rol", "user")
+            except:
+                rol = "user"
+
             dlg = ft.AlertDialog(
                 title=ft.Text("Éxito"),
                 content=ft.Text("Inicio de sesión exitoso"),
-                actions=[]
-            )
-            # Agrega la acción, ya que dlg ya existe
-            dlg.actions.append(
-                ft.TextButton("OK", on_click=lambda e: close_dialog_success(e, dlg))
+                actions=[
+                    ft.TextButton("OK", on_click=lambda e: on_success(e, dlg, rol))
+                ]
             )
         else:
-            print("Error al iniciar sesión")
-            # Actualiza el estado global en caso de error
             auth_state.is_authenticated = False
             auth_state.user = None
             dlg = ft.AlertDialog(
                 title=ft.Text("Error"),
                 content=ft.Text("No se pudo iniciar sesión"),
-                actions=[]
+                actions=[
+                    ft.TextButton("OK", on_click=lambda e: close_error(e, dlg))
+                ]
             )
-            dlg.actions.append(
-                ft.TextButton("OK", on_click=lambda e: close_dialog(e, dlg))
-            )
-        # Abre el diálogo usando el helper method recomendado
+
         page.open(dlg)
-    
-    def close_dialog(e, dialog):
-        dialog.open = False
+
+    def close_error(e, dlg):
+        dlg.open = False
         page.update()
-    
-    def close_dialog_success(e, dialog):
-        dialog.open = False
+
+    def on_success(e, dlg, rol):
+        dlg.open = False
         page.update()
-        page.views.append(
-            ft.View(
-                route="/main_menu",
-                controls=[Admin_menu(page)]
-            )
-        )
-        page.go("/main_menu")
-        
-    def go_back(e):
-        if hasattr(page, "on_back"):
-            page.on_back()
+        # route-based navigation
+        if rol == "admin":
+            page.go("/admin_menu")
+        elif rol == "staff":
+            page.go("/trainer_menu")
         else:
-            page.clean()
-            page.update()
-    
-    # Construcción de la vista de login
+            page.go("/user_menu")
+
+    def go_back(e):
+        page.go("/")
+
+    # Build UI
     login_container = ft.Container(
-            content=ft.Column(
+        expand=True,
+        gradient=ft.LinearGradient(
+            colors=[ft.Colors.WHITE, ft.Colors.BLUE_200],
+            begin=ft.alignment.top_center,
+            end=ft.alignment.bottom_center
+        ),
+        content=ft.Column(
             [
                 ft.Column(
                     [
-                        ft.Text("Iniciar sesión", size=32, weight=ft.FontWeight.BOLD,color=ft.Colors.BLACK),
-                        ft.Text("Hola de nuevo", size=16, color=ft.Colors.BLACK54)
+                        ft.Text("Iniciar sesión",
+                                size=32, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK),
+                        ft.Text("Hola de nuevo",
+                                size=16, color=ft.Colors.BLACK54),
                     ],
-                    horizontal_alignment= 'center'
+                    horizontal_alignment="center"
                 ),
                 ft.Column(
                     [
-                        ft.Row(controls=[email_input], alignment='center'),
-                        ft.Row(controls=[password_input], alignment='center')
+                        ft.Row(controls=[email_input], alignment="center"),
+                        ft.Row(controls=[password_input], alignment="center"),
+                        spinner,
                     ],
-                    horizontal_alignment= ft.CrossAxisAlignment.CENTER
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER
                 ),
                 ft.Column(
-                    [login_button, back_button]
+                    [
+                        ft.ElevatedButton(
+                            "Iniciar Sesión",
+                            height=50, width=250,
+                            color="#0F3BAC",
+                            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10), elevation=5),
+                            bgcolor="#FEF7FF",
+                            on_click=handle_login
+                        ),
+                        ft.ElevatedButton(
+                            "Volver",
+                            height=50, width=250,
+                            bgcolor="#ffcccc", color="red",
+                            on_click=go_back
+                        ),
+                    ],
+                    spacing=10,
+                    alignment=ft.MainAxisAlignment.CENTER
                 )
-                
             ],
             alignment=ft.MainAxisAlignment.SPACE_AROUND,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            expand= True
-        ),
-        gradient= ft.LinearGradient(colors=[ft.Colors.WHITE, ft.Colors.BLUE_200], begin=ft.alignment.top_center, end=ft.alignment.bottom_center),
-        expand=True,
+            expand=True
+        )
     )
-    
+
     return login_container
 
-
 Login = login_view
-
 __all__ = ["login"]

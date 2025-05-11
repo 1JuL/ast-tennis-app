@@ -1,9 +1,11 @@
+# src/pages/registration.py
+
 import flet as ft
-from utils.firebase import sign_up  # sign_up retorna el usuario creado o None
-from pages.add_user_info import Add_user_info
-from utils.global_state import auth_state
+from utils.firebase        import sign_up
+from utils.global_state    import auth_state
 
 def registration_view(page: ft.Page):
+    # Inputs
     email_input = ft.TextField(
         label="Correo electrónico",
         prefix_icon=ft.Icons.EMAIL,
@@ -31,7 +33,7 @@ def registration_view(page: ft.Page):
         width=300
     )
 
-    # Botones con el estilo del segundo código
+    # Buttons
     register_button = ft.ElevatedButton(
         text="Registrar",
         height=50,
@@ -49,10 +51,10 @@ def registration_view(page: ft.Page):
         bgcolor="#ffcccc",
         color="red",
         width=250,
-        on_click=lambda e: go_back(e)
+        on_click=lambda e: page.go("/")   # back to home
     )
 
-    # Función para mostrar un diálogo de información
+    # Dialog helpers
     def show_dialog(message, on_close=None):
         dlg = ft.AlertDialog(
             title=ft.Text("Información"),
@@ -69,45 +71,36 @@ def registration_view(page: ft.Page):
         page.update()
         if on_close:
             on_close()
-    
-    # Función para manejar el registro (lógica del primer código)
+
+    # Registration logic
     def register(e):
-        email = email_input.value.strip()
+        email        = email_input.value.strip()
         confirm_email = confirm_email_input.value.strip()
-        password = password_input.value.strip()
+        password     = password_input.value.strip()
         
-        # Validación básica de los campos
-        
+        if not email or not confirm_email or not password:
+            show_dialog("Todos los campos son obligatorios.")
+            return
+
         if email != confirm_email:
             show_dialog("Los correos electrónicos no coinciden.")
             return
         
-        # Llama a sign_up; éste retorna el usuario creado o None
         user = sign_up(email, password)
-        if user is not None:
+        if user:
             auth_state.is_authenticated = True
             auth_state.user = user
-            def on_dialog_close():
-                page.views.append(
-                    ft.View(
-                        route="/add_user_info",
-                        controls=[Add_user_info(page)]
-                    )
-                )
+
+            # On success, navigate to add_user_info
+            def on_ok():
                 page.go("/add_user_info")
-            show_dialog("¡Registro exitoso!", on_close=on_dialog_close)
+
+            show_dialog("¡Registro exitoso!", on_close=on_ok)
+
         else:
             show_dialog("Error en el registro.")
-    
-    # Función para volver al menú principal
-    def go_back(e):
-        if hasattr(page, "on_back"):
-            page.on_back()
-        else:
-            page.clean()
-            page.update()
-    
-    # Construcción de la vista de registro con el estilo del segundo código
+
+    # UI layout
     registration_container = ft.Container(
         content=ft.Column(
             [
@@ -146,7 +139,6 @@ def registration_view(page: ft.Page):
     
     return registration_container
 
-# Exportamos la función con el alias "registration" para importarla desde main.py
+# Export
 Registration = registration_view
-
 __all__ = ["registration"]

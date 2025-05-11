@@ -7,10 +7,7 @@ from datetime import datetime
 
 
 
-def gestionar_pagos_view(page: ft.Page):
-
-    
- 
+def gestionar_pagos_user_view(page: ft.Page):
 
     def getPagos():
         """Se piden los pagos de la persona mediante su id y se cargan en el gridView"""
@@ -81,7 +78,7 @@ def gestionar_pagos_view(page: ft.Page):
         icon_color=ft.Colors.BLUE_400,
         icon_size=20,
         tooltip="Volver",
-        on_click=lambda e: page.on_back() if hasattr(page, "on_back") else None
+        on_click=lambda e: page.go("/admin_menu")
     )
     toolbar_left = ft.Row(
         controls=[btn_volver],
@@ -101,21 +98,27 @@ def gestionar_pagos_view(page: ft.Page):
         run_spacing=10,
     )
 
-
-
-    # Construcción del contenedor principal que une la barra de herramientas y el grid
-    main_container = ft.Container(
-        content=ft.Column(
+    main_column = ft.Column(
         controls=[toolbar, grid_pagos],
         spacing=10,
-        expand= True, 
-        ),
-        gradient= ft.LinearGradient(colors=[ft.Colors.WHITE, ft.Colors.BLUE_200], begin=ft.alignment.top_center, end=ft.alignment.bottom_center),
         expand=True,
     )
-    return main_container
+
+    # Wrap in one Container and return it
+    gestionar_pagos_user_container = ft.Container(
+        content=main_column,
+        gradient=ft.LinearGradient(
+            colors=[ft.Colors.WHITE, ft.Colors.BLUE_200],
+            begin=ft.alignment.top_center,
+            end=ft.alignment.bottom_center,
+        ),
+        expand=True,
+        padding=20,
+    )
+
+    return gestionar_pagos_user_container
 
 # Exportamos la función con el alias 'Gestionar_pagos'
-Gestionar_pagos = gestionar_pagos_view
+Gestionar_pagos_user = gestionar_pagos_user_view
 
 __all__ = ["gestionar_pagos"]

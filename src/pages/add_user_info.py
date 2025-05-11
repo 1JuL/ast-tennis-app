@@ -3,7 +3,6 @@ import datetime
 import re
 from models.person import PersonBuilder  # Asegúrate de que la ruta sea correcta
 from utils.global_state import auth_state
-from pages.admin_menu import Admin_menu
 from utils.ConexionDB import api_client  # Instancia global de APIClient
 
 # Patrones de validación
@@ -139,13 +138,7 @@ def add_user_info_view(page: ft.Page):
         page.open(dp)
     
     def on_dialog_close():
-        page.views.append(
-            ft.View(
-                route="/main_menu",
-                controls=[Admin_menu(page)]
-            )
-        )
-        page.go("/main_menu")
+        page.go("/user_menu")
     
     # Función para guardar la información, enviar a la API y redirigir al main_menu
     def save_info(e):
@@ -221,7 +214,7 @@ def add_user_info_view(page: ft.Page):
                 return
 
         fecha_nacimiento_str = fecha_nacimiento.isoformat()
-        rol = "usuario"
+        rol = "user"
         estado = "registrado"
 
         # Activa el spinner de carga

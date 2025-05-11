@@ -64,12 +64,8 @@ def visualizar_entrenamientos(page: ft.Page):
             return []
     
     def go_back(page):
-        if hasattr(page, "on_back"):
-            page.on_back()
-        else:
-            page.clean()
-            page.update()
-
+        page.go("/admin_menu")
+       
     # Función para cargar los entrenamientos
     entrenamientos_existentes = obtener_entrenamientos_tipo_2()
 

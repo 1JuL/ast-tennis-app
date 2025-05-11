@@ -85,11 +85,7 @@ def visualizar_torneos_view(page: ft.Page):
     
     # Función para volver al menú o la vista anterior
     def go_back(page):
-        if hasattr(page, "on_back"):
-            page.on_back()
-        else:
-            page.clean()
-            page.update()
+        page.go("/admin_menu")
 
     # Barra de herramientas
     btn_volver = ft.IconButton(
