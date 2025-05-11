@@ -13,7 +13,7 @@ class Event:
         self.podio = builder.podio  # Añadido el campo podio
 
 class EventBuilder:
-    def _init_(self):
+    def __init__(self):
         self.ID = None
         self.nombre = None
         self.fecha = None
