@@ -47,6 +47,12 @@ def nav_buttons(page: ft.Page):
                     bgcolor=ft.Colors.BLACK,
                     on_click=lambda e: page.go("/gestionar_pagos_user")
                 ),
+                ft.ElevatedButton(
+                    text="Trainer Trainings",  
+                    width=250,
+                    bgcolor=ft.Colors.BLACK,
+                    on_click=lambda e: page.go("/trainer_trainings")
+                ),
                 ft.Container(
                     ft.ElevatedButton(
                         text="Volver",

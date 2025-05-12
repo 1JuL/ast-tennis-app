@@ -92,7 +92,6 @@ def visualizar_entrenamientos(page: ft.Page):
             grid_entrenamientos.controls.append(crear_card_entrenamiento(entrenamiento))
         page.update()
         
-    # Barra de herramientas
     btn_volver = ft.IconButton(
         icon=ft.Icons.ARROW_BACK,
         icon_color=ft.Colors.BLUE_400,

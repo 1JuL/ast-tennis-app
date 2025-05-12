@@ -31,9 +31,6 @@ def login_view(page: ft.Page):
 
         user = sign_in(email_input.value, password_input.value)
 
-        spinner.visible = False
-        page.update()
-
         if user:
             auth_state.is_authenticated = True
             auth_state.user = user
@@ -44,16 +41,29 @@ def login_view(page: ft.Page):
                 personas = api_client.get(f"personas/uid/{uid}")
                 persona  = personas[0] if isinstance(personas, list) else personas
                 rol      = persona.get("rol", "user")
+                
+                dlg = ft.AlertDialog(
+                    title=ft.Text("Éxito"),
+                    content=ft.Text("Inicio de sesión exitoso"),
+                    actions=[
+                        ft.TextButton("OK", on_click=lambda e: on_success(e, dlg, rol))
+                    ]
+                )
             except:
-                rol = "user"
+                rol = "null"
+                auth_state.is_authenticated = False
+                auth_state.user = None
+                dlg = ft.AlertDialog(
+                    title=ft.Text("Error"),
+                    content=ft.Text("No se pudo obtener un rol valido"),
+                    actions=[
+                        ft.TextButton("OK", on_click=lambda e: page.go("/"))
+                    ]
+                )
+            
+            page.open(dlg)                
 
-            dlg = ft.AlertDialog(
-                title=ft.Text("Éxito"),
-                content=ft.Text("Inicio de sesión exitoso"),
-                actions=[
-                    ft.TextButton("OK", on_click=lambda e: on_success(e, dlg, rol))
-                ]
-            )
+            
         else:
             auth_state.is_authenticated = False
             auth_state.user = None
@@ -68,18 +78,22 @@ def login_view(page: ft.Page):
         page.open(dlg)
 
     def close_error(e, dlg):
+        spinner.visible = False
+        page.update()
         dlg.open = False
         page.update()
 
     def on_success(e, dlg, rol):
+        spinner.visible = False
+        page.update()
         dlg.open = False
         page.update()
         # route-based navigation
         if rol == "admin":
             page.go("/admin_menu")
-        elif rol == "staff":
+        elif rol == "Profesor":
             page.go("/trainer_menu")
-        else:
+        elif rol == "user":
             page.go("/user_menu")
 
     def go_back(e):
