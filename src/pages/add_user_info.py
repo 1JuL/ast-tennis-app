@@ -214,8 +214,8 @@ def add_user_info_view(page: ft.Page):
                 return
 
         fecha_nacimiento_str = fecha_nacimiento.isoformat()
-        rol = "user"
-        estado = "registrado"
+        rol = "Usuario"
+        estado = "Registrado"
 
         # Activa el spinner de carga
         spinner.visible = True

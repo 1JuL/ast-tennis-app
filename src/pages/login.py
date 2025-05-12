@@ -89,11 +89,11 @@ def login_view(page: ft.Page):
         dlg.open = False
         page.update()
         # route-based navigation
-        if rol == "admin":
+        if rol == "Administrador":
             page.go("/admin_menu")
         elif rol == "Profesor":
             page.go("/trainer_menu")
-        elif rol == "user":
+        elif rol == "Usuario":
             page.go("/user_menu")
 
     def go_back(e):
