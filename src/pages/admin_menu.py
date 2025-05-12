@@ -308,6 +308,12 @@ def admin_menu_view(page: ft.Page):
                     on_click=lambda _: page.go("/visualizar_torneos")
                 ),
                 
+                ft.ElevatedButton(
+                    text="Trainer Trainings",
+                    width=250,
+                    on_click=lambda _: page.go("/trainer_trainings")
+                ),
+                
                 ft.Divider(color=ft.Colors.WHITE54),
                 
                 ft.ElevatedButton(

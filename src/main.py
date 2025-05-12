@@ -9,6 +9,7 @@ from pages.nav_buttons import Nav_buttons
 from pages.registration   import Registration
 from pages.add_user_info import Add_user_info
 from pages.admin_menu     import Admin_menu
+from pages.trainer_trainings import Trainer_trainings
 from pages.user_menu      import User_menu
 from pages.trainer_menu   import Trainer_menu
 from pages.visualizar_entrenamientos import Visualizar_entrenamientos
@@ -116,6 +117,13 @@ def main(page: ft.Page):
                 ft.View(
                     route="/visualizar_torneos",
                     controls=[ Visualizar_torneos(page) ]
+                )
+            )
+        elif page.route == "/trainer_trainings":
+            page.views.append(
+                ft.View(
+                    route="/trainer_trainings",
+                    controls=[ Trainer_trainings(page) ]
                 )
             )
         elif page.route == "/nav_buttons":
