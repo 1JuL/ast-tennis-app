@@ -14,6 +14,7 @@ from pages.user_menu      import User_menu
 from pages.trainer_menu   import Trainer_menu
 from pages.visualizar_entrenamientos import Visualizar_entrenamientos
 from pages.visualizar_torneos import Visualizar_torneos
+from pages.register_person import Register_person
 
 def main(page: ft.Page):
     page.title               = "AST Tennis"
@@ -124,6 +125,13 @@ def main(page: ft.Page):
                 ft.View(
                     route="/trainer_trainings",
                     controls=[ Trainer_trainings(page) ]
+                )
+            )
+        elif page.route == "/register_person":
+            page.views.append(
+                ft.View(
+                    route="/register_person",
+                    controls=[ Register_person(page) ]
                 )
             )
         elif page.route == "/nav_buttons":

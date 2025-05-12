@@ -312,6 +312,12 @@ def admin_menu_view(page: ft.Page):
                     on_click=lambda _: page.go("/trainer_trainings")
                 ),
                 
+                ft.ElevatedButton(
+                    text="Register Person",
+                    width=250,
+                    on_click=lambda _: page.go("/register_person")
+                ),
+                
                 ft.Divider(color=ft.Colors.WHITE54),
                 
                 ft.ElevatedButton(
