@@ -67,6 +67,7 @@ def gestionar_torneos(page: ft.Page):
                         ft.Text(f"Fecha: {torneo['fecha']}"),
                         ft.Text(f"Hora: {torneo['hora']}"),
                         ft.Text(f"Categoría: {torneo['categoria']}"),
+                        
                         ft.Row([btn_modificar, btn_eliminar], spacing=10, alignment=ft.MainAxisAlignment.CENTER)
                     ],
                     spacing=10
@@ -92,6 +93,7 @@ def gestionar_torneos(page: ft.Page):
     # Create tournament form
     def mostrar_formulario_crear(e):
         nombre_field = ft.TextField(label="Nombre del torneo", hint_text="Nombre del torneo", border_color=ft.Colors.BLUE_600)
+        cupos_field = ft.TextField(label="Cupos del torneo", hint_text="Cupos del torneo", border_color=ft.Colors.BLUE_600)
         categoria_field = ft.Dropdown(
             width=300,
             hint_text="Categoría",
@@ -141,11 +143,33 @@ def gestionar_torneos(page: ft.Page):
             if not nombre_field.value or nombre_field.value.strip() == "":
                 show_error_popup("El nombre del torneo no puede estar vacío o contener solo espacios.")
                 return
+            if not cupos_field.value or not cupos_field.value.isdigit():
+                show_error_popup("El número de cupos debe ser un número entero positivo.")
+                return
+            if int(cupos_field.value) <= 0:
+                show_error_popup("El número de cupos debe ser mayor que 0.")
+                return
+            if not categoria_field.value or categoria_field.value == "":
+                show_error_popup("Debe seleccionar una categoría.")
+                return
             if not categoria_field.value:
                 show_error_popup("Debe seleccionar una categoría.")
                 return
             if not selected_date.value:
                 show_error_popup("Debe seleccionar una fecha.")
+                return
+            #la fecha es igual o superior a la fecha actual
+            try:
+                fecha = datetime.datetime.strptime(selected_date.value, '%Y-%m-%d').date()
+                if fecha < datetime.date.today():
+                    show_error_popup("La fecha debe ser igual o posterior a la fecha actual.")
+                    return
+            except ValueError:
+                show_error_popup("Formato de fecha inválido.")
+                return
+            #la fecha es menor a un año
+            if fecha > datetime.date.today() + datetime.timedelta(days=365):
+                show_error_popup("La fecha debe ser menor a un año.")
                 return
             if not selected_time.value:
                 show_error_popup("Debe seleccionar una hora.")
@@ -158,10 +182,13 @@ def gestionar_torneos(page: ft.Page):
                     "nombre": nombre_field.value.strip(),
                     "fecha": str(fecha),
                     "hora": str(hora),
+                    "horaFinal": 0,
                     "tipo": 1,
                     "categoria": categoria_field.value,
                     "profesorID": 0,
-                    "podio": 0
+                    "podio": 0,
+                    "num_personas": int(cupos_field.value)
+                    
 }
 
                 api_client.post("eventos", torneo_data)
@@ -184,6 +211,7 @@ def gestionar_torneos(page: ft.Page):
             content=ft.Column(
                 [
                     nombre_field,
+                    cupos_field,
                     categoria_field,
                     ft.Row([
                         ft.Text("Fecha:"),
@@ -214,13 +242,14 @@ def gestionar_torneos(page: ft.Page):
 
     # Edit tournament form
     def mostrar_formulario_editar(torneo):
-        required_keys = ["id", "nombre", "categoria", "fecha", "hora"]
+        required_keys = ["id", "nombre","num_personas", "categoria", "fecha", "hora"]
         missing_keys = [key for key in required_keys if key not in torneo]
         if missing_keys:
             show_error_popup(f"Faltan datos en el torneo: {missing_keys}")
             return
 
         nombree_field = ft.TextField(label="Nombre del torneo", value=torneo["nombre"], border_color=ft.Colors.BLUE_600)
+        cupose_field = ft.TextField(label="Cupos del torneo", value=str(torneo["num_personas"]), border_color=ft.Colors.BLUE_600)
         categoriae_field = ft.Dropdown(
             width=300,
             value=torneo["categoria"],
@@ -281,6 +310,9 @@ def gestionar_torneos(page: ft.Page):
             if not nombree_field.value or nombree_field.value.strip() == "":
                 show_error_popup("El nombre del torneo no puede estar vacío.")
                 return
+            if not cupose_field.value or not cupose_field.value.isdigit():
+                show_error_popup("El número de cupos debe ser un número entero positivo.")
+                return
             if not categoriae_field.value:
                 show_error_popup("Debe seleccionar una categoría.")
                 return
@@ -303,7 +335,9 @@ def gestionar_torneos(page: ft.Page):
                     "tipo": 1,
                     "categoria": categoriae_field.value,
                     "profesorID": 0,
-                    "podio": 0
+                    "podio": 0,
+                    "num_personas": int(cupose_field.value)
+                    
                 }
 
                 api_client.put(f"eventos/{torneo_data['id']}", torneo_data)
@@ -371,7 +405,11 @@ def gestionar_torneos(page: ft.Page):
 
     # UI Components
     def go_back(page):
-        page.go("/admin_menu")
+        if hasattr(page, "on_back"):
+            page.on_back()
+        else:
+            page.clean()
+            page.update()
             
     btn_volver = ft.IconButton(
         icon=ft.Icons.ARROW_BACK,
@@ -448,7 +486,7 @@ def gestionar_torneos(page: ft.Page):
         content=main_container,
         gradient=ft.LinearGradient(
             begin=ft.alignment.top_center,
-            end=ft.alignment.bottom_center,
+            end=ft.alignment.bottom_center, 
             colors=[ft.Colors.WHITE, ft.Colors.BLUE_100]
         ),
         expand=True,
@@ -456,4 +494,4 @@ def gestionar_torneos(page: ft.Page):
     )
 
 Gestionar_torneos = gestionar_torneos
-__all__ = ["gestionar_torneos"]
+_all_ = ["gestionar_torneos"]
