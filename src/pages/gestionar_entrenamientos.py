@@ -90,7 +90,7 @@ def gestionar_entrenamientos(page: ft.Page):
                 first_date=datetime.date.today() - datetime.timedelta(days=365),
                 last_date=datetime.date.today() + datetime.timedelta(days=365),
                 on_change=lambda e: [
-                    selected_date.__setattr__('value', e.control.value.strftime("%Y-%m-%d")),
+                    selected_date._setattr_('value', e.control.value.strftime("%Y-%m-%d")),
                     page.update()
                 ]
             )
@@ -123,7 +123,26 @@ def gestionar_entrenamientos(page: ft.Page):
             if not nombre_field.value or nombre_field.value.strip() == "":
                 show_error_popup("El nombre del entrenamiento no puede estar vacío o contener solo espacios.")
                 return
-
+            #Validacion fecha mayor o igual a la fecha actual
+            try:
+                fecha_actual = datetime.date.today()
+                fecha_seleccionada = datetime.datetime.strptime(selected_date.value, "%Y-%m-%d").date()
+                if fecha_seleccionada < fecha_actual:
+                    show_error_popup("La fecha seleccionada no puede ser anterior a la fecha actual.")
+                    return
+            except ValueError:
+                show_error_popup("Formato de fecha no válido.")
+                return
+            #Validacion fecha no superorior a 1 año
+            try:
+                fecha_seleccionada = datetime.datetime.strptime(selected_date.value, "%Y-%m-%d").date()
+                fecha_maxima = fecha_actual + datetime.timedelta(days=365)
+                if fecha_seleccionada > fecha_maxima:
+                    show_error_popup("La fecha seleccionada no puede ser superior a un año.")
+                    return
+            except ValueError:
+                show_error_popup("Formato de fecha no válido.")
+                return
             if not categoria_field.value:
                 show_error_popup("Debe seleccionar una categoría.")
                 return
@@ -158,7 +177,8 @@ def gestionar_entrenamientos(page: ft.Page):
                 'horaFinal': selected_end_time.value,
                 'tipo': 2,
                 'profesorID': profesor_id,
-                'podio': 0
+                'podio': 0,
+                'num_personas': 0,
             }
 
             try:
@@ -376,7 +396,8 @@ def gestionar_entrenamientos(page: ft.Page):
                     'horaFinal': selected_end_time_editar.value,
                     'tipo': 2,
                     'profesorID': profesor_id,
-                    'podio': 0
+                    'podio': 0,
+                    'num_personas': 0,
                 }
 
                 try:
@@ -609,4 +630,4 @@ def gestionar_entrenamientos(page: ft.Page):
     )
 
 Gestionar_entrenamientos = gestionar_entrenamientos
-__all__ = ["gestionar_entrenamientos"]
+_all_ = ["gestionar_entrenamientos"]

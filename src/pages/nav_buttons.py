@@ -5,6 +5,8 @@ from pages.gestionar_entrenamientos import Gestionar_entrenamientos  # Importa l
 from pages.visualizar_entrenamientos import Visualizar_entrenamientos  # Importa la nueva vista de entrenamientos
 from pages.gestionar_torneos import Gestionar_torneos
 from pages.add_user_info import Add_user_info
+from pages.gestionar_pagos_user import Gestionar_pagos_user
+from pages.trainer_trainings import Trainer_trainings
 
 def nav_buttons(page: ft.Page):
 
@@ -16,6 +18,12 @@ def nav_buttons(page: ft.Page):
                     width=250,
                     bgcolor=ft.Colors.BLACK,
                     on_click=lambda e: page.go("/gestionar_pagos")
+                ),
+                ft.ElevatedButton(
+                    text="Profesor Entrenamientos",
+                    width=250,
+                    bgcolor=ft.Colors.BLACK,
+                    on_click=lambda e: page.go("/trainer_trainings")
                 ),
                 ft.ElevatedButton(
                     text="Gestionar Torneos",

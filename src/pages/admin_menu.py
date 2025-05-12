@@ -282,6 +282,8 @@ def admin_menu_view(page: ft.Page):
                     on_click=lambda _: page.go("/gestionar_torneos")
                 ),
                 
+                
+                
                 ft.ElevatedButton(
                     text="Gestionar Pagos",
                     width=250,
