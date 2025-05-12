@@ -3,6 +3,8 @@ import requests
 from utils.ConexionDB import api_client
 
 def trainer_trainings(page: ft.Page):
+    # Variable de estado para almacenar todos los entrenamientos
+    entrenamientos = []
 
     # Función para obtener estudiantes por categoría
     def obtener_estudiantes_por_categoria(categoria):
@@ -271,6 +273,18 @@ def trainer_trainings(page: ft.Page):
             print(f"Error al obtener eventos: {e}")
             return []
 
+    # Función para buscar entrenamientos
+    def buscar_entrenamientos(e):
+        filtro = search_field.value.lower() if search_field.value else ""
+        filtered_entrenamientos = [
+            entrenamiento for entrenamiento in entrenamientos
+            if filtro in entrenamiento["nombre"].lower()
+        ]
+        grid.controls.clear()
+        for entrenamiento in filtered_entrenamientos:
+            grid.controls.append(crear_card_entrenamiento(entrenamiento))
+        page.update()
+
     # Crear tarjeta de entrenamiento
     def crear_card_entrenamiento(entrenamiento):
         profesor = obtener_nombre_profesor_por_id(entrenamiento.get('profesorID', ''))
@@ -313,19 +327,69 @@ def trainer_trainings(page: ft.Page):
         )
 
     # Interfaz principal
+    # Obtener entrenamientos inicialmente
     entrenamientos = obtener_entrenamientos_tipo_2()
     grid = ft.GridView(expand=True, max_extent=300, spacing=20, run_spacing=20, padding=20)
-    for e in entrenamientos:
-        grid.controls.append(crear_card_entrenamiento(e))
+    for entrenamiento in entrenamientos:
+        grid.controls.append(crear_card_entrenamiento(entrenamiento))
 
+    # Botón de volver (asumido como parte de la interfaz)
+    btn_volver = ft.IconButton(
+        icon=ft.Icons.ARROW_BACK,
+        icon_color=ft.Colors.BLUE_600,
+        tooltip="Volver",
+        on_click=lambda e: page.go("/"),  # Ajusta la ruta según tu lógica
+    )
+
+    # Campo de búsqueda
+    search_field = ft.TextField(
+        hint_text="Filtrar por nombre de torneo",
+        width=300,
+        color=ft.Colors.BLACK,
+        hint_style=ft.TextStyle(color=ft.Colors.BLACK54),
+        border_color=ft.Colors.BLUE_600,
+        on_submit=buscar_entrenamientos
+    )
+
+    # Ícono de búsqueda
+    search_icon = ft.IconButton(
+        icon=ft.Icons.SEARCH,
+        icon_color=ft.Colors.BLUE_600,
+        tooltip="Buscar",
+        on_click=buscar_entrenamientos
+    )
+
+    # Contenedor de búsqueda
+    search_container = ft.Row(
+        controls=[
+            search_field,
+            search_icon
+        ],
+        spacing=0,
+        alignment=ft.MainAxisAlignment.START
+    )
+
+    # Barra de herramientas
+    toolbar = ft.Row(
+        controls=[
+            btn_volver,
+            search_container,
+        ],
+        alignment=ft.MainAxisAlignment.START,
+        spacing=20,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER
+    )
+
+    # Contenedor principal
     return ft.Container(
         content=ft.Column([
             ft.AppBar(
                 title=ft.Text("Entrenamientos", weight="bold"),
                 bgcolor=ft.Colors.BLUE_400,
-                color=ft.Colors.WHITE
+                color=ft.Colors.WHITE,
+                actions=[toolbar]  # Agregamos la barra de herramientas al AppBar
             ),
-            ft.Row([ft.TextField(hint_text="Buscar entrenamiento...", width=300, border_radius=8)]),
+            ft.Row([search_container]),  # Mostramos el campo de búsqueda por separado si lo deseas
             grid
         ]),
         gradient=ft.LinearGradient(colors=[ft.Colors.WHITE, ft.Colors.BLUE_100]),
