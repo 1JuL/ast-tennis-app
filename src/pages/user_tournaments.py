@@ -4,11 +4,42 @@ from utils.ConexionDB import api_client
 from utils.global_state import auth_state
 
 def user_tournaments(page: ft.Page):
+    # Obtener el UID desde auth_state.user
     user_data = auth_state.user
-    print(user_data)
-    # user_data debe contener el UID y la categoría del usuario
+    print(f"User data from auth_state: {user_data}")  # Depuración
+
+    if not user_data or 'localId' not in user_data:
+        print("Error: UID no disponible en auth_state")
+        page.snack_bar = ft.SnackBar(ft.Text("Error: Inicia sesión nuevamente."), bgcolor=ft.Colors.RED_600)
+        page.snack_bar.open = True
+        page.update()
+        return ft.Container(content=ft.Text("Error: Inicia sesión nuevamente.", color=ft.Colors.RED_600))
+
     user_uid = user_data.get('localId')
-    user_categoria = user_data.get('categoria')
+    print(f"User UID: {user_uid}")  # Depuración
+
+    # Obtener datos completos del usuario desde la API
+    def obtener_datos_usuario():
+        try:
+            response = api_client.get(f"personas/uid/{user_uid}")
+            persona = response[0] if isinstance(response, list) else response
+            if persona and 'categoria' in persona:
+                return persona
+            else:
+                raise Exception("Datos de usuario incompletos")
+        except Exception as e:
+            print(f"Error al obtener datos del usuario: {e}")
+            return None
+
+    user_data_complete = obtener_datos_usuario()
+    if not user_data_complete:
+        page.snack_bar = ft.SnackBar(ft.Text("Error: No se pudieron obtener los datos del usuario."), bgcolor=ft.Colors.RED_600)
+        page.snack_bar.open = True
+        page.update()
+        return ft.Container(content=ft.Text("Error: No se pudieron obtener los datos del usuario.", color=ft.Colors.RED_600))
+
+    user_categoria = user_data_complete.get('categoria')
+    print(f"User Categoria: {user_categoria}")  # Depuración
 
     # Función para mostrar errores
     def show_error_popup(message):
@@ -32,6 +63,7 @@ def user_tournaments(page: ft.Page):
         try:
             response = api_client.get("eventos")
             torneos = [evento for evento in response if evento.get('tipo') == 1 and evento.get('categoria') == user_categoria]
+            print(f"Torneos obtenidos: {torneos}")  # Depuración
             return torneos
         except Exception as e:
             show_error_popup(f"Error al obtener torneos: {e}")
@@ -40,17 +72,28 @@ def user_tournaments(page: ft.Page):
     # Obtener inscripciones del usuario
     def obtener_inscripciones_usuario():
         try:
-            response = api_client.get("personasEventos", params={"eventoId": None})
+            response = api_client.get("personasEventos", params={"personaUid": user_uid})
+            print(f"Respuesta de la API para inscripciones del usuario: {response}")  # Depuración
             return [inscripcion for inscripcion in response if inscripcion.get('personaUid') == user_uid]
         except Exception as e:
             show_error_popup(f"Error al obtener inscripciones: {e}")
             return []
 
-    # Obtener número de inscritos autorizados para un torneo
+    # Obtener número de inscritos (solo asistencia: true)
     def obtener_inscritos_autorizados(torneo_id):
         try:
-            response = api_client.get("personasEventos", params={"eventoId": torneo_id, "asistencia": True})
-            return len(response)
+            # Intentar filtrar por asistencia: true en la API
+            response = api_client.get("personasEventos", params={"eventoId": torneo_id, "asistencia": "true"})
+            print(f"Respuesta de la API para inscritos autorizados (filtrado por asistencia=true): {response}")  # Depuración
+
+            # Filtrado manual como respaldo
+            if response:
+                inscritos = [inscripcion for inscripcion in response if inscripcion.get('asistencia') in [True, "true"]]
+                print(f"Inscritos autorizados después de filtrado manual para torneo {torneo_id}: {inscritos}")  # Depuración
+                return len(inscritos)
+            else:
+                print(f"No se encontraron inscritos para torneo {torneo_id}")
+                return 0
         except Exception as e:
             show_error_popup(f"Error al obtener inscritos: {e}")
             return 0
@@ -58,7 +101,7 @@ def user_tournaments(page: ft.Page):
     # Inscribir al usuario en un torneo
     def inscribirse_torneo(torneo_id):
         try:
-            # Verificar capacidad
+            # Verificar capacidad (solo inscritos autorizados cuentan)
             inscritos = obtener_inscritos_autorizados(torneo_id)
             torneo = next((t for t in torneos if t['id'] == torneo_id), None)
             if not torneo:
@@ -69,14 +112,15 @@ def user_tournaments(page: ft.Page):
                 show_error_popup("El torneo ha alcanzado su capacidad máxima.")
                 return False
 
-            # Inscribir
+            # Inscribir con asistencia: false (en espera)
             response = api_client.post(
                 "personasEventos",
                 data={"eventoId": torneo_id, "personaUid": user_uid, "asistencia": False}
             )
-            page.snack_bar = ft.SnackBar(ft.Text("Inscripción enviada. Esperando autorización."), bgcolor=ft.Colors.GREEN_600)
+            print(f"Respuesta de la API al inscribirse: {response}")  # Depuración
+            page.snack_bar = ft.SnackBar(ft.Text("Inscripción enviada. Espera autorización del administrador."), bgcolor=ft.Colors.GREEN_600)
             page.snack_bar.open = True
-            page.update()
+            actualizar_vista()  # Forzar actualización de la vista después de la inscripción
             return True
         except requests.exceptions.HTTPError as e:
             show_error_popup(f"Error al inscribirse: {e.response.status_code}")
@@ -89,9 +133,10 @@ def user_tournaments(page: ft.Page):
     def desinscribirse_torneo(inscripcion_id):
         try:
             response = api_client.delete(f"personasEventos/{inscripcion_id}")
+            print(f"Respuesta de la API al desinscribirse: {response}")  # Depuración
             page.snack_bar = ft.SnackBar(ft.Text("Te has desinscrito del torneo."), bgcolor=ft.Colors.GREEN_600)
             page.snack_bar.open = True
-            page.update()
+            actualizar_vista()  # Forzar actualización de la vista después de desinscribirse
             return True
         except requests.exceptions.HTTPError as e:
             show_error_popup(f"Error al desinscribirse: {e.response.status_code}")
@@ -107,30 +152,34 @@ def user_tournaments(page: ft.Page):
         inscritos = obtener_inscritos_autorizados(torneo['id'])
 
         # Determinar estado y botones
+        estado = None
+        botones = ft.Row([], alignment=ft.MainAxisAlignment.CENTER)  # Inicialmente vacío
+
+        print(f"Inscripción del usuario para torneo {torneo['id']}: {inscripcion}")  # Depuración
+
         if inscripcion:
             # Usuario ya está inscrito
-            if inscripcion['asistencia']:
-                # Autorizado
+            if inscripcion['asistencia'] in [True, "true"]:
+                # Autorizado (asistencia: true)
                 estado = ft.Text("Admitido: Sí", color=ft.Colors.GREEN_700)
                 botones = ft.Row([
                     ft.ElevatedButton(
                         "Desinscribirse",
-                        on_click=lambda e: desinscribirse_torneo(inscripcion['id']) and actualizar_vista(),
+                        on_click=lambda e: desinscribirse_torneo(inscripcion['id']),
                         bgcolor=ft.Colors.RED_600,
                         color=ft.Colors.WHITE
                     )
                 ], alignment=ft.MainAxisAlignment.CENTER)
             else:
-                # Esperando autorización
+                # En espera de autorización (asistencia: false)
                 estado = ft.Text("Admitido: No", color=ft.Colors.ORANGE_700)
-                botones = ft.Row([])  # Sin botones mientras espera autorización
+                # No mostramos botones (ni "Inscribirse" ni "Desinscribirse")
         else:
             # No inscrito
-            estado = None
             botones = ft.Row([
                 ft.ElevatedButton(
                     "Inscribirse",
-                    on_click=lambda e: inscribirse_torneo(torneo['id']) and actualizar_vista(),
+                    on_click=lambda e: inscribirse_torneo(torneo['id']),
                     bgcolor=ft.Colors.GREEN_600,
                     color=ft.Colors.WHITE,
                     disabled=inscritos >= torneo['num_personas']

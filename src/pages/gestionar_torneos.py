@@ -1,4 +1,5 @@
 import flet as ft
+import requests
 from models.event import Event
 from models.event_type import Event_Type, Event_TypeBuilder
 import datetime
@@ -43,13 +44,14 @@ def gestionar_torneos(page: ft.Page):
             show_error_popup(f"Error al obtener los profesores: {e}")
             return []
 
-    # Fetch participants for a tournament
-    def obtener_participantes_torneo(torneo_id):
+    # Fetch authorized participants for a tournament (asistencia: true)
+    def obtener_participantes_autorizados(torneo_id):
         try:
-            response = api_client.get("personasEventos", params={"eventoId": torneo_id})
+            response = api_client.get("personasEventos", params={"eventoId": torneo_id, "asistencia": "true"})
+            print(f"Participantes autorizados para torneo {torneo_id}: {response}")  # Depuración
             return response if response else []
         except Exception as e:
-            show_error_popup(f"Error al obtener participantes: {e}")
+            show_error_popup(f"Error al obtener participantes autorizados: {e}")
             return []
 
     # Update participant's authorization status
@@ -100,6 +102,99 @@ def gestionar_torneos(page: ft.Page):
         page.open(dialog)
         page.update()
 
+    # Fetch all participants for a tournament (including those with asistencia: false)
+    def obtener_participantes_torneo(torneo_id):
+        try:
+            response = api_client.get("personasEventos", params={"eventoId": torneo_id})
+            return response if response else []
+        except Exception as e:
+            show_error_popup(f"Error al obtener participantes: {e}")
+            return []
+
+    # Update podium for a tournament
+    def actualizar_podio(torneo_id, podio):
+        try:
+            response = api_client.put(
+                f"eventos/{torneo_id}",
+                data={"podio": podio}
+            )
+            print(f"Respuesta de la API al actualizar podio: {response}")  # Depuración
+            page.snack_bar = ft.SnackBar(ft.Text("Podio actualizado correctamente."), bgcolor=ft.Colors.GREEN_600)
+            page.snack_bar.open = True
+            page.update()
+            return True
+        except requests.exceptions.HTTPError as e:
+            show_error_popup(f"Error al actualizar podio: {e.response.status_code}")
+            return False
+        except Exception as e:
+            show_error_popup(f"Error al actualizar podio: {e}")
+            return False
+
+    # Show dialog to edit podium
+    def mostrar_formulario_podio(torneo):
+        participantes = obtener_participantes_autorizados(torneo['id'])
+        if not participantes:
+            show_error_popup("No hay participantes autorizados para este torneo.")
+            return
+
+        # Crear opciones para los dropdowns (participantes con asistencia: true)
+        opciones = [
+            ft.dropdown.Option(key=None, text="Ninguno")
+        ] + [
+            ft.dropdown.Option(key=p['personaUid'], text=f"{p['persona'].get('nombre', 'Desconocido')} {p['persona'].get('apellido', '')}")
+            for p in participantes if p.get('persona') and p['persona'].get('nombre')
+        ]
+
+        # Convertir podio a diccionario si es un entero (0)
+        podio_actual = torneo.get('podio', {})
+        if isinstance(podio_actual, int):
+            podio_actual = {"primero": None, "segundo": None, "tercero": None}
+
+        # Campos de dropdown para cada puesto, con valores actuales del podio si existen
+        primer_puesto = ft.Dropdown(
+            label="Primer Puesto",
+            options=opciones,
+            value=podio_actual.get('primero'),
+            width=300
+        )
+        segundo_puesto = ft.Dropdown(
+            label="Segundo Puesto",
+            options=opciones,
+            value=podio_actual.get('segundo'),
+            width=300
+        )
+        tercer_puesto = ft.Dropdown(
+            label="Tercer Puesto",
+            options=opciones,
+            value=podio_actual.get('tercero'),
+            width=300
+        )
+
+        def guardar_podio(e):
+            podio = {
+                "primero": primer_puesto.value,
+                "segundo": segundo_puesto.value,
+                "tercero": tercer_puesto.value
+            }
+            if actualizar_podio(torneo['id'], podio):
+                page.close(dialog)
+
+        dialog = ft.AlertDialog(
+            title=ft.Text(f"Editar Podio - {torneo['nombre']}"),
+            content=ft.Column([
+                primer_puesto,
+                segundo_puesto,
+                tercer_puesto,
+            ], tight=True),
+            actions=[
+                ft.TextButton("Cancelar", on_click=lambda e: page.close(dialog)),
+                ft.TextButton("Guardar", on_click=guardar_podio),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END
+        )
+        page.open(dialog)
+        page.update()
+
     # Create tournament card
     def crear_card_torneo(torneo):
         profesor = "Sin profesor"  # Since profesorID is always 0 for tournaments
@@ -121,26 +216,58 @@ def gestionar_torneos(page: ft.Page):
             color=ft.Colors.WHITE,
             bgcolor=ft.Colors.BLUE_600
         )
+        btn_podio = ft.ElevatedButton(
+            "Podio",
+            on_click=lambda e: mostrar_formulario_podio(torneo),
+            color=ft.Colors.WHITE,
+            bgcolor=ft.Colors.PURPLE_600
+        )
+
+        # Convertir podio a diccionario si es un entero (0)
+        podio = torneo.get('podio', {})
+        if isinstance(podio, int):
+            podio = {"primero": None, "segundo": None, "tercero": None}
+
+        # Mostrar el podio actual si existe
+        podio_text = []
+        if podio.get('primero'):
+            participante = next((p for p in obtener_participantes_autorizados(torneo['id']) if p['personaUid'] == podio['primero']), None)
+            nombre = participante['persona'].get('nombre', 'Desconocido') if participante else "Desconocido"
+            podio_text.append(f"1º: {nombre}")
+        if podio.get('segundo'):
+            participante = next((p for p in obtener_participantes_autorizados(torneo['id']) if p['personaUid'] == podio['segundo']), None)
+            nombre = participante['persona'].get('nombre', 'Desconocido') if participante else "Desconocido"
+            podio_text.append(f"2º: {nombre}")
+        if podio.get('tercero'):
+            participante = next((p for p in obtener_participantes_autorizados(torneo['id']) if p['personaUid'] == podio['tercero']), None)
+            nombre = participante['persona'].get('nombre', 'Desconocido') if participante else "Desconocido"
+            podio_text.append(f"3º: {nombre}")
+
+        content = [
+            ft.Text(torneo["nombre"], size=20, weight="bold"),
+            ft.Text(f"Fecha: {torneo['fecha']}"),
+            ft.Text(f"Hora: {torneo['hora']}"),
+            ft.Text(f"Categoría: {torneo['categoria']}"),
+            ft.Text(f"Capacidad: {torneo.get('num_personas', 'No especificado')}"),
+        ]
+
+        if podio_text:
+            content.append(ft.Text("Podio:", weight="bold", color=ft.Colors.PURPLE_800))
+            for linea in podio_text:
+                content.append(ft.Text(linea, color=ft.Colors.GREY_800))
+
+        content.append(
+            ft.Row(
+                [btn_modificar, btn_eliminar, btn_participantes, btn_podio],
+                spacing=10,
+                alignment=ft.MainAxisAlignment.CENTER,
+                wrap=True
+            )
+        )
 
         return ft.Card(
             content=ft.Container(
-                content=ft.Column(
-                    [
-                        ft.Text(torneo["nombre"], size=20, weight="bold"),
-                        ft.Text(f"Fecha: {torneo['fecha']}"),
-                        ft.Text(f"Hora: {torneo['hora']}"),
-                        ft.Text(f"Categoría: {torneo['categoria']}"),
-                        ft.Text(f"Capacidad: {torneo.get('num_personas', 'No especificado')}"),
-
-                        ft.Row(
-                            [btn_modificar, btn_eliminar, btn_participantes],
-                            spacing=10,
-                            alignment=ft.MainAxisAlignment.CENTER,
-                            wrap=True
-                        )
-                    ],
-                    spacing=10
-                ),
+                content=ft.Column(content, spacing=10),
                 padding=20,
                 bgcolor=ft.Colors.WHITE,
                 border_radius=8,
@@ -221,9 +348,6 @@ def gestionar_torneos(page: ft.Page):
             if not categoria_field.value or categoria_field.value == "":
                 show_error_popup("Debe seleccionar una categoría.")
                 return
-            if not categoria_field.value:
-                show_error_popup("Debe seleccionar una categoría.")
-                return
             if not selected_date.value:
                 show_error_popup("Debe seleccionar una fecha.")
                 return
@@ -253,7 +377,7 @@ def gestionar_torneos(page: ft.Page):
                     "tipo": 1,
                     "categoria": categoria_field.value,
                     "profesorID": 0,
-                    "podio": 0,
+                    "podio": {"primero": None, "segundo": None, "tercero": None},  # Inicializar como diccionario
                     "num_personas": int(cupos_field.value)
                 }
 
@@ -393,6 +517,11 @@ def gestionar_torneos(page: ft.Page):
                 fecha = datetime.datetime.strptime(selected_date_editar.value, '%Y-%m-%d').date()
                 hora = datetime.datetime.strptime(selected_time_editar.value, '%H:%M').time()
                 
+                # Convertir podio a diccionario si es un entero
+                podio = torneo_data.get('podio', {})
+                if isinstance(podio, int):
+                    podio = {"primero": None, "segundo": None, "tercero": None}
+
                 torneo_data = {
                     "id": torneo_data['id'],
                     "nombre": nombree_field.value.strip(),
@@ -401,7 +530,7 @@ def gestionar_torneos(page: ft.Page):
                     "tipo": 1,
                     "categoria": categoriae_field.value,
                     "profesorID": 0,
-                    "podio": 0,
+                    "podio": podio,
                     "num_personas": int(cupose_field.value)
                 }
 

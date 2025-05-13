@@ -630,4 +630,4 @@ def gestionar_entrenamientos(page: ft.Page):
     )
 
 Gestionar_entrenamientos = gestionar_entrenamientos
-_all_ = ["gestionar_entrenamientos"]
+__all__ = ["gestionar_entrenamientos"]
