@@ -2,8 +2,8 @@ import flet as ft
 from utils.ConexionDB import api_client  # Asegúrate de tener la configuración correcta para api_client
 
 def visualizar_entrenamientos(page: ft.Page):
-
-    entrenamientos_simulados = []  # Lista donde almacenaremos los entrenamientos filtrados (tipo == 2)
+    entrenamientos_simulados = []  # Lista donde almacenaremos los entrenamientos filtrados
+    user_id = page.user_id  # Asumimos que el ID del usuario está disponible en page.user_id
 
     # Función para crear tarjeta de entrenamiento
     def crear_card_entrenamiento(entrenamiento):
@@ -53,23 +53,35 @@ def visualizar_entrenamientos(page: ft.Page):
             print(f"Error al obtener el profesor: {e}")
             return "Desconocido"
 
-    # Función para obtener los entrenamientos con tipo == 2
-    def obtener_entrenamientos_tipo_2():
+    # Función para obtener los entrenamientos en los que el usuario está inscrito
+    def obtener_entrenamientos_inscritos():
         try:
-            response = api_client.get("eventos")  # Asumimos que la ruta es /eventos
-            entrenamientos = [entrenamiento for entrenamiento in response if entrenamiento['tipo'] == 2]
+            # Obtener los eventos en los que el usuario está inscrito
+            response = api_client.get("personasEventos", params={"personaUid": user_id})
+            if not response:
+                return []
+
+            # Extraer los IDs de los eventos en los que el usuario está inscrito
+            evento_ids = [item["eventoId"] for item in response if item.get("asistencia", False)]
+
+            # Obtener todos los eventos y filtrar por los IDs de los eventos inscritos y tipo 2
+            all_events = api_client.get("eventos") or []
+            entrenamientos = [
+                evento for evento in all_events
+                if evento.get('tipo') == 2 and evento.get('id') in evento_ids
+            ]
             return entrenamientos
         except Exception as e:
-            print(f"Error al obtener los eventos: {e}")
+            print(f"Error al obtener los entrenamientos inscritos: {e}")
             return []
-    
+
     def go_back(page):
         page.go("/admin_menu")
-       
-    # Función para cargar los entrenamientos
-    entrenamientos_existentes = obtener_entrenamientos_tipo_2()
 
-    # Crear las tarjetas con los entrenamientos tipo 2
+    # Función para cargar los entrenamientos
+    entrenamientos_existentes = obtener_entrenamientos_inscritos()
+
+    # Crear las tarjetas con los entrenamientos inscritos
     grid_entrenamientos = ft.GridView(
         expand=True,
         max_extent=250,
@@ -84,14 +96,17 @@ def visualizar_entrenamientos(page: ft.Page):
     # Función de búsqueda
     def buscar_entrenamientos(e):
         filtro = search_field.value.lower()
-        filtered_entrenamientos = [entrenamiento for entrenamiento in entrenamientos_existentes if filtro in entrenamiento["nombre"].lower()]
+        filtered_entrenamientos = [
+            entrenamiento for entrenamiento in entrenamientos_existentes
+            if filtro in entrenamiento["nombre"].lower()
+        ]
 
         # Limpiar y agregar tarjetas filtradas
         grid_entrenamientos.controls.clear()
         for entrenamiento in filtered_entrenamientos:
             grid_entrenamientos.controls.append(crear_card_entrenamiento(entrenamiento))
         page.update()
-        
+
     btn_volver = ft.IconButton(
         icon=ft.Icons.ARROW_BACK,
         icon_color=ft.Colors.BLUE_400,
@@ -131,7 +146,6 @@ def visualizar_entrenamientos(page: ft.Page):
     )
 
     return visual_container
-
 
 Visualizar_entrenamientos = visualizar_entrenamientos
 
