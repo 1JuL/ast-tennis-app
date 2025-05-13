@@ -289,7 +289,7 @@ def admin_menu_view(page: ft.Page):
                 ),
                 
                 ft.ElevatedButton(
-                    text="Register Person",
+                    text="Registrar Persona",
                     width=250,
                     on_click=lambda _: page.go("/register_person")
                 ),
@@ -298,6 +298,7 @@ def admin_menu_view(page: ft.Page):
                 
                 ft.ElevatedButton(
                     "Logout",
+                    width=250,
                     bgcolor=ft.Colors.RED,
                     color=ft.Colors.WHITE,
                     on_click=lambda e: logout(page)

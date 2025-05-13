@@ -48,8 +48,10 @@ def registration_view(page: ft.Page):
     )
     back_button = ft.ElevatedButton(
         text="Volver",
-        bgcolor="#ffcccc",
-        color="red",
+        bgcolor="red",
+        height=50,
+        color="white",
+        style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10), elevation=5),
         width=250,
         on_click=lambda e: page.go("/")   # back to home
     )

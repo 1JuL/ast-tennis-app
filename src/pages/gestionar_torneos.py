@@ -252,9 +252,21 @@ def gestionar_torneos(page: ft.Page):
         ]
 
         if podio_text:
-            content.append(ft.Text("Podio:", weight="bold", color=ft.Colors.PURPLE_800))
-            for linea in podio_text:
-                content.append(ft.Text(linea, color=ft.Colors.GREY_800))
+            # 1) Podio label...
+            content.append(
+                ft.Text("Podio:", weight="bold", color=ft.Colors.PURPLE_800)
+            )
+            # 2) Single row containing all podium entries side‑by‑side
+            content.append(
+                ft.Row(
+                    controls=[
+                        ft.Text(linea, color=ft.Colors.GREY_800)
+                        for linea in podio_text
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    spacing=20,  # adjust spacing as you like
+                )
+            )
 
         content.append(
             ft.Row(

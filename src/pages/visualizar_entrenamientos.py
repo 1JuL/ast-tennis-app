@@ -26,7 +26,9 @@ def visualizar_entrenamientos(page: ft.Page):
                         ft.Text(f"Categoría: {entrenamiento['categoria']}"),
                         ft.Text(f"Profesor: {profesor}"),
                     ],
-                    spacing=10
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    spacing=10,
                 ),
                 padding=20,
                 bgcolor=ft.Colors.WHITE,

@@ -3,10 +3,18 @@ from utils.ConexionDB             import api_client
 from utils.global_state           import auth_state
 
 def logout(page: ft.Page):
-    # Clear global auth state
+    # 1. Reset auth state
     auth_state.is_authenticated = False
     auth_state.user = None
-    # Navigate away
+
+    # 2. Close any active SnackBar or Dialog
+    page.dialog = None
+    page.snack_bar = None
+
+    # 3. Clear all views (drops any overlays/views)
+    page.views.clear()
+
+    # 4. Go home, replacing the current history entry
     page.go("/")
     page.update()
 
@@ -40,6 +48,7 @@ def user_menu_view(page: ft.Page):
                 
                 ft.ElevatedButton(
                     "Logout",
+                    width=250,
                     bgcolor=ft.Colors.RED,
                     color=ft.Colors.WHITE,
                     on_click=lambda e: logout(page)

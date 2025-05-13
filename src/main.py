@@ -5,7 +5,6 @@ from pages.gestionar_pagos import Gestionar_pagos
 from pages.gestionar_pagos_user import Gestionar_pagos_user
 from pages.gestionar_torneos import Gestionar_torneos
 from pages.login          import Login
-from pages.nav_buttons import Nav_buttons
 from pages.registration   import Registration
 from pages.add_user_info import Add_user_info
 from pages.admin_menu     import Admin_menu
@@ -143,13 +142,6 @@ def main(page: ft.Page):
                     controls=[ User_tournaments(page) ]
                 )
             )
-        elif page.route == "/nav_buttons":
-            page.views.append(
-                ft.View(
-                    route="/nav_buttons",
-                    controls=[ Nav_buttons(page) ]
-                )
-            )
 
         page.update()
 
@@ -165,20 +157,33 @@ def main(page: ft.Page):
     # --- home builder ---
     def build_home():
         return [
-            ft.AppBar(title=ft.Text("AST Tennis")),
+            ft.AppBar(title=ft.Text("AST Tennis", size=80, weight=ft.FontWeight.BOLD), center_title=True, toolbar_height=70 ),
             ft.Row(
                 [
                     ft.Container(
                         content=ft.Image(src="./src/assets/ast-tennis-logo.png", width=350, height=350),
-                        expand=True
                     ),
                     ft.Column(
                         [
                             ft.Text("¿Qué vamos a hacer hoy?", size=20),
-                            ft.ElevatedButton("Iniciar sesión", on_click=lambda _: page.go("/login")),
-                            ft.ElevatedButton("Registrarse",    on_click=lambda _: page.go("/register")),
-                            ft.ElevatedButton("Navegación",      on_click=lambda _: page.go("/nav_buttons")),
-                            ft.ElevatedButton("Salir",           bgcolor=ft.Colors.RED, on_click=lambda _: page.window.close()),
+                            ft.ElevatedButton(
+                                "Iniciar sesión",
+                                height=50, width=250,
+                                style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10), elevation=5),
+                                on_click=lambda _: page.go("/login")),
+                            
+                            ft.ElevatedButton(
+                                "Registrarse",
+                                height=50, width=250,
+                                style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10), elevation=5),
+                                on_click=lambda _: page.go("/register")),
+                            
+                            ft.ElevatedButton(
+                                "Salir",
+                                color="white",
+                                height=50, width=250,
+                                style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10), elevation=5),
+                                bgcolor=ft.Colors.RED, on_click=lambda _: page.window.close()),
                         ],
                         alignment=ft.MainAxisAlignment.CENTER,
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -186,8 +191,9 @@ def main(page: ft.Page):
                     ),
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
+                spacing=150,
                 expand=True
-            )
+            ),
         ]
 
     page.go("/")

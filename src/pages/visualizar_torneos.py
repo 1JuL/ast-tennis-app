@@ -25,6 +25,8 @@ def visualizar_torneos_view(page: ft.Page):
                         ft.Text(f"Hora: {entrenamiento['hora']}"),
                         
                     ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     spacing=10
                 ),
                 padding=20,
@@ -85,7 +87,7 @@ def visualizar_torneos_view(page: ft.Page):
     
     # Función para volver al menú o la vista anterior
     def go_back(page):
-        page.go("/admin_menu")
+        page.go("/trainer_menu")
 
     # Barra de herramientas
     btn_volver = ft.IconButton(

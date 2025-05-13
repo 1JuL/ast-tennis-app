@@ -139,7 +139,9 @@ def login_view(page: ft.Page):
                         ft.ElevatedButton(
                             "Volver",
                             height=50, width=250,
-                            bgcolor="#ffcccc", color="red",
+                            bgcolor="red",
+                            color="white",
+                            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10), elevation=5),
                             on_click=go_back
                         ),
                     ],

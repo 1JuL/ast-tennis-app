@@ -27,7 +27,7 @@ def register_person_view(page: ft.Page):
     txt_apellido = ft.TextField(label="Apellido", width=300, prefix_icon=ft.Icons.ACCOUNT_CIRCLE)
     txt_fecha = ft.TextField(
         label="Fecha de nacimiento",
-        width=300,
+        width=400,
         read_only=True,
         text_align=ft.TextAlign.CENTER,           # center-align date text
         prefix_icon=ft.Icons.CALENDAR_TODAY
@@ -45,7 +45,7 @@ def register_person_view(page: ft.Page):
 
     dropdown_categoria = ft.Dropdown(
         label="Categoría (si aplica)",
-        width=300,
+        width=400,
         options=[
             ft.dropdown.Option("Benjamin"),
             ft.dropdown.Option("Alevin"),
@@ -58,7 +58,7 @@ def register_person_view(page: ft.Page):
     )
     dropdown_estado = ft.Dropdown(
         label="Estado",
-        width=300,
+        width=400,
         options=[
             ft.dropdown.Option("Registrado"),
             ft.dropdown.Option("Matriculado"),
@@ -67,7 +67,7 @@ def register_person_view(page: ft.Page):
     )
     dropdown_rol = ft.Dropdown(
         label="Rol",
-        width=300,
+        width=400,
         hint_text="Seleccione rol",
         options=[
             ft.dropdown.Option("Usuario"),
@@ -174,7 +174,7 @@ def register_person_view(page: ft.Page):
             page.update()
 
     # — Layout —
-    content = ft.Column(
+    content = ft.ListView(
         controls=[
             ft.Row(
                 controls=[btn_back, ft.Text("Registrar Persona", size=24)],
@@ -182,13 +182,14 @@ def register_person_view(page: ft.Page):
             ),
             txt_nombre,
             txt_apellido,
-            ft.Row(
+            ft.Column(
                 controls=[
                     txt_fecha,
                     ft.ElevatedButton("Seleccionar fecha", on_click=pick_date)
                 ],
                 spacing=10,
-                alignment=ft.MainAxisAlignment.CENTER
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER 
             ),
             txt_telefono,
             txt_direccion,
@@ -201,7 +202,7 @@ def register_person_view(page: ft.Page):
             ft.ElevatedButton("Guardar", on_click=save_person, width=200)
         ],
         spacing=15,
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        width=400,
         expand=True
     )
 
@@ -213,7 +214,8 @@ def register_person_view(page: ft.Page):
             begin=ft.alignment.top_center,
             end=ft.alignment.bottom_center,
         ),
-        expand=True
+        expand=True,
+        alignment=ft.alignment.center,
     )
 
 # Export

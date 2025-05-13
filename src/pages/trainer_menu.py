@@ -34,6 +34,7 @@ def trainer_menu_view(page: ft.Page):
                 
                 ft.ElevatedButton(
                     "Logout",
+                    width=250,
                     bgcolor=ft.Colors.RED,
                     color=ft.Colors.WHITE,
                     on_click=lambda e: logout(page)
