@@ -15,6 +15,11 @@ def visualizar_entrenamientos(page: ft.Page):
         if profesor_id:
             profesor = obtener_nombre_profesor_por_id(profesor_id)
         hora_final = entrenamiento.get('horaFinal', 'No definida')
+        
+        # Obtener el estado de asistencia para este usuario y evento
+        asistencia = obtener_asistencia_entrenamiento(entrenamiento.get('id'))
+        asistencia_texto = ft.Text(f"Asistencia: {'Sí' if asistencia else 'No'}", color=ft.Colors.GREEN_700 if asistencia else ft.Colors.RED_700)
+
         return ft.Card(
             content=ft.Container(
                 content=ft.Column(
@@ -25,6 +30,7 @@ def visualizar_entrenamientos(page: ft.Page):
                         ft.Text(f"Hora final: {hora_final}"),
                         ft.Text(f"Categoría: {entrenamiento['categoria']}"),
                         ft.Text(f"Profesor: {profesor}"),
+                        asistencia_texto,  # Añadir texto de asistencia
                     ],
                     alignment=ft.MainAxisAlignment.CENTER,
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -49,6 +55,17 @@ def visualizar_entrenamientos(page: ft.Page):
         except Exception as e:
             print(f"Error al obtener el profesor: {e}")
             return "Desconocido"
+
+    # Función para obtener el estado de asistencia del usuario en un evento
+    def obtener_asistencia_entrenamiento(evento_id):
+        try:
+            response = api_client.get("personasEventos", params={"eventoId": evento_id, "personaUid": user_id})
+            if response and len(response) > 0:
+                return response[0].get('asistencia', False) in [True, "true"]
+            return False
+        except Exception as e:
+            print(f"Error al obtener asistencia para evento {evento_id}: {e}")
+            return False
 
     # Función para verificar si el usuario está inscrito en un evento
     def is_user_inscribed(evento_id):
