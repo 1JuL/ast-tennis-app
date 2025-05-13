@@ -3,6 +3,7 @@ from models.Payment import Payment  # Ajusta la ruta según tu estructura de car
 from utils.ConexionDB import api_client
 from datetime import datetime
 from flet import KeyboardType
+import re
 
 
 def gestionar_pagos_view(page: ft.Page):   
@@ -130,14 +131,15 @@ def gestionar_pagos_view(page: ft.Page):
 
     def registrar_pago(lista):
         """Genera una peticion de creacion de pago"""
+        pattern = re.compile(r"^\d+$", re.IGNORECASE)
 
         # Ya sé que esto se ve horrible pero me rehuso a usar chat para mejorar esta mierda, prefiero esperar a que
         # mi poderoso y sexy cerebro se idee otra forma más optima pa validar esto, por ahora se queda así, total, es mi módulo, puñetas
         if lista[0].strip() == '':
             page.open(generar_alerta("Error", "Debe ingresar un ID"))
             return
-        if lista[1].strip() == '':
-            page.open(generar_alerta("Error", "Debe ingresar un monto"))
+        if lista[1].strip() == '' or not pattern.match(lista[0].strip()):
+            page.open(generar_alerta("Error", "Debe ingresar un monto válido"))
             return
         if lista[2].strip() == '':
             page.open(generar_alerta("Error", "Debe ingresar una fecha"))
