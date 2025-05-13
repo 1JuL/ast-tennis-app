@@ -282,30 +282,10 @@ def admin_menu_view(page: ft.Page):
                     on_click=lambda _: page.go("/gestionar_torneos")
                 ),
                 
-                
-                
                 ft.ElevatedButton(
                     text="Gestionar Pagos",
                     width=250,
                     on_click=lambda _: page.go("/gestionar_pagos")
-                ),
-                
-                ft.ElevatedButton(
-                    text="Visualizar Entrenamientos",
-                    width=250,
-                    on_click=lambda _: page.go("/visualizar_entrenamientos")
-                ),
-                
-                ft.ElevatedButton(
-                    text="Visualizar Torneos",
-                    width=250,
-                    on_click=lambda _: page.go("/visualizar_torneos")
-                ),
-                
-                ft.ElevatedButton(
-                    text="Trainer Trainings",
-                    width=250,
-                    on_click=lambda _: page.go("/trainer_trainings")
                 ),
                 
                 ft.ElevatedButton(
@@ -340,28 +320,28 @@ def admin_menu_view(page: ft.Page):
             content=ft.Container(
                 content=ft.Column(
                     controls=[
-                        ft.Text(full_name, weight=ft.FontWeight.BOLD),
+                        ft.Text(full_name, weight=ft.FontWeight.BOLD, size=20),
                         ft.Text(f"Email: {person.get('email', '')}"),
                         ft.Text(f"Estado: {estado}"),
-                        ft.Row(
+                        ft.Column(
                             controls=[
                                 ft.ElevatedButton(
                                     text="Editar",
-                                    width=80,
+                                    width=120,
                                     bgcolor=ft.Colors.YELLOW_700,
                                     color=ft.Colors.WHITE,
                                     on_click=lambda e, p=person: edit_person_modal(page, p)
                                 ),
                                 ft.ElevatedButton(
                                     text="Ver detalles",
-                                    width=100,
+                                    width=120,
                                     bgcolor=ft.Colors.BLUE,
                                     color=ft.Colors.WHITE,
                                     on_click=lambda e, p=person: show_person_details(p)
                                 ),
                                 ft.ElevatedButton(
                                     text="Eliminar",
-                                    width=80,
+                                    width=120,
                                     bgcolor=ft.Colors.RED,
                                     color=ft.Colors.WHITE,
                                     on_click=lambda e, p=person: print("Eliminar", p)
@@ -370,6 +350,8 @@ def admin_menu_view(page: ft.Page):
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN
                         )
                     ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     spacing=10
                 ),
                 padding=ft.padding.all(10),
@@ -409,7 +391,7 @@ def admin_menu_view(page: ft.Page):
         expand=True,
         runs_count=3,
         max_extent=400,
-        spacing=10,
+        spacing=20,
         child_aspect_ratio=1.0,
         run_spacing=10,
         controls=cards

@@ -46,7 +46,8 @@ def user_menu_view(page: ft.Page):
                 ),
             ],
             spacing=10,
-            alignment=ft.MainAxisAlignment.START
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         )
     )
 

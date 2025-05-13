@@ -288,10 +288,11 @@ def trainer_trainings(page: ft.Page):
     # Crear tarjeta de entrenamiento
     def crear_card_entrenamiento(entrenamiento):
         profesor = obtener_nombre_profesor_por_id(entrenamiento.get('profesorID', ''))
-        botones = ft.Row(
+        botones = ft.Column(
             controls=[
                 ft.ElevatedButton(
                     "Añadir Estudiantes",
+                    width=180,
                     icon=ft.Icons.PERSON_ADD,
                     on_click=lambda e: abrir_dialogo_añadir(entrenamiento),
                     bgcolor=ft.Colors.GREEN_400,
@@ -299,14 +300,16 @@ def trainer_trainings(page: ft.Page):
                 ),
                 ft.ElevatedButton(
                     "Dar Asistencia",
+                    width=180,
                     icon=ft.Icons.CHECKLIST,
                     on_click=lambda e: mostrar_dialogo_asistencia(entrenamiento),
                     bgcolor=ft.Colors.ORANGE_400,
                     color=ft.Colors.WHITE
                 )
             ],
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             spacing=10,
-            alignment=ft.MainAxisAlignment.CENTER
         )
         
         return ft.Card(
@@ -317,7 +320,11 @@ def trainer_trainings(page: ft.Page):
                     ft.Text(f"Categoría: {entrenamiento.get('categoria', 'Sin categoría')}", color=ft.Colors.GREY_800),
                     ft.Text(f"Profesor: {profesor}", color=ft.Colors.GREY_800),
                     botones
-                ], spacing=10),
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                spacing=10
+                ),
                 padding=20,
                 bgcolor=ft.Colors.WHITE,
                 border_radius=8
@@ -338,7 +345,7 @@ def trainer_trainings(page: ft.Page):
         icon=ft.Icons.ARROW_BACK,
         icon_color=ft.Colors.BLUE_600,
         tooltip="Volver",
-        on_click=lambda e: page.go("/"),  # Ajusta la ruta según tu lógica
+        on_click=lambda e: page.go("/trainer_menu"),  # Ajusta la ruta según tu lógica
     )
 
     # Campo de búsqueda
@@ -382,14 +389,9 @@ def trainer_trainings(page: ft.Page):
 
     # Contenedor principal
     return ft.Container(
+        expand=True,
         content=ft.Column([
-            ft.AppBar(
-                title=ft.Text("Entrenamientos", weight="bold"),
-                bgcolor=ft.Colors.BLUE_400,
-                color=ft.Colors.WHITE,
-                actions=[toolbar]  # Agregamos la barra de herramientas al AppBar
-            ),
-            ft.Row([search_container]),  # Mostramos el campo de búsqueda por separado si lo deseas
+            toolbar,
             grid
         ]),
         gradient=ft.LinearGradient(colors=[ft.Colors.WHITE, ft.Colors.BLUE_100]),

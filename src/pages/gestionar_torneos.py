@@ -266,15 +266,23 @@ def gestionar_torneos(page: ft.Page):
         )
 
         return ft.Card(
+            elevation=3,
+            width=300,
+             # wrap content in a container that expands and centers its child
             content=ft.Container(
-                content=ft.Column(content, spacing=10),
+                expand=True,                                    # fill the card
+                alignment=ft.alignment.center,                  # center the Column
                 padding=20,
                 bgcolor=ft.Colors.WHITE,
                 border_radius=8,
-                shadow=ft.BoxShadow(blur_radius=10, color=ft.Colors.BLACK12)
-            ),
-            elevation=3,
-            width=300
+                shadow=ft.BoxShadow(blur_radius=10, color=ft.Colors.BLACK12),
+                content=ft.Column(
+                    controls=content,                          # your list of Text/Row
+                    spacing=20,
+                    alignment=ft.MainAxisAlignment.CENTER,     # center vertically
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER  # center horizontally
+                )
+            )
         )
 
     # Search tournaments
@@ -658,7 +666,7 @@ def gestionar_torneos(page: ft.Page):
     )
     grid_torneos = ft.GridView(
         expand=True,
-        max_extent=300,
+        max_extent=450,
         runs_count=3,
         spacing=15,
         run_spacing=15

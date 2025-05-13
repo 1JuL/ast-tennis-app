@@ -18,6 +18,7 @@ from pages.visualizar_torneos import Visualizar_torneos
 from pages.register_person import Register_person
 
 def main(page: ft.Page):
+    page.window.maximized = True
     page.title               = "AST Tennis"
     page.bgcolor             = ft.Colors.WHITE
     page.padding             = 0
