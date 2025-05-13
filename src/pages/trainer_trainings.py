@@ -10,9 +10,13 @@ def trainer_trainings(page: ft.Page):
     def obtener_estudiantes_por_categoria(categoria):
         try:
             response = api_client.get("personas")
-            print(f"Respuesta de /personas: {len(response)} personas")  # Depurar
-            estudiantes = [p for p in response if p.get('rol') == "Usuario" and p.get('categoria') == categoria]
-            print(f"Estudiantes encontrados para categoría {categoria}: {estudiantes}")  # Depurar
+            estudiantes = [
+                p for p in response
+                if p.get('rol') == "Usuario"
+                and p.get('categoria') == categoria
+                and p.get('estado') == "matriculado"
+            ]
+            print(f"Estudiantes matriculados en categoría {categoria}: {len(estudiantes)} encontrados")
             return estudiantes
         except Exception as e:
             print(f"Error al obtener estudiantes: {e}")
