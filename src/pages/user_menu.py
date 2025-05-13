@@ -21,7 +21,7 @@ def user_menu_view(page: ft.Page):
                 ft.ElevatedButton(
                     text="Visualizar Torneos",
                     width=250,
-                    on_click=lambda _: page.go("/visualizar_torneos")
+                    on_click=lambda _: page.go("/user_tournaments"),
                 ),
                 
                 ft.Divider(color=ft.Colors.WHITE54),

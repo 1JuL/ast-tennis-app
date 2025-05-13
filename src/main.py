@@ -12,6 +12,7 @@ from pages.admin_menu     import Admin_menu
 from pages.trainer_trainings import Trainer_trainings
 from pages.user_menu      import User_menu
 from pages.trainer_menu   import Trainer_menu
+from pages.user_tournaments import User_tournaments
 from pages.visualizar_entrenamientos import Visualizar_entrenamientos
 from pages.visualizar_torneos import Visualizar_torneos
 from pages.register_person import Register_person
@@ -132,6 +133,13 @@ def main(page: ft.Page):
                 ft.View(
                     route="/register_person",
                     controls=[ Register_person(page) ]
+                )
+            )
+        elif page.route == "/user_tournaments":
+            page.views.append(
+                ft.View(
+                    route="/user_tournaments",
+                    controls=[ User_tournaments(page) ]
                 )
             )
         elif page.route == "/nav_buttons":

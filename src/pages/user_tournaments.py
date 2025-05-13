@@ -1,10 +1,13 @@
 import flet as ft
 import requests
 from utils.ConexionDB import api_client
+from utils.global_state import auth_state
 
-def user_tournaments(page: ft.Page, user_data: dict):
+def user_tournaments(page: ft.Page):
+    user_data = auth_state.user
+    print(user_data)
     # user_data debe contener el UID y la categoría del usuario
-    user_uid = user_data.get('uid')
+    user_uid = user_data.get('localId')
     user_categoria = user_data.get('categoria')
 
     # Función para mostrar errores
@@ -223,6 +226,7 @@ def user_tournaments(page: ft.Page, user_data: dict):
 
     # Contenedor principal
     return ft.Container(
+        expand=True,
         content=ft.Column([
             ft.AppBar(
                 title=ft.Text("Torneos Disponibles", weight="bold"),
