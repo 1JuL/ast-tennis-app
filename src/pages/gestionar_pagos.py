@@ -11,7 +11,7 @@ def gestionar_pagos_view(page: ft.Page):
         listaEstudiantes = []
         response = api_client.get("personas")
         for usuario in response:
-            if usuario["rol"] == "Estudiante" or usuario["rol"] == "usuario" :
+            if usuario["rol"] == "Usuario" or usuario["rol"] == "Usuario" :
                 listaEstudiantes.append(usuario)
         return listaEstudiantes
 
