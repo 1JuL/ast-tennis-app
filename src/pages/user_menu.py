@@ -19,6 +19,18 @@ def user_menu_view(page: ft.Page):
         content=ft.Column(
             controls=[
                 ft.ElevatedButton(
+                    text="Visualizar mis Pagos",
+                    width=250,
+                    on_click=lambda _: page.go("/gestionar_pagos_user"),
+                ),
+                
+                ft.ElevatedButton(
+                    text="Visualizar Entrenamientos",
+                    width=250,
+                    on_click=lambda _: page.go("/visualizar_entrenamientos"),
+                ),
+                
+                ft.ElevatedButton(
                     text="Visualizar Torneos",
                     width=250,
                     on_click=lambda _: page.go("/user_tournaments"),
@@ -43,7 +55,7 @@ def user_menu_view(page: ft.Page):
     try:
         resp = api_client.get(f"personas/uid/{uid}")
         person = resp[0] if isinstance(resp, list) else resp
-        welcome_name = person.get("nombre", "Entrenador")
+        welcome_name = person.get("nombre", "Usuario")
     except:
         welcome_name = "Usuario"
 

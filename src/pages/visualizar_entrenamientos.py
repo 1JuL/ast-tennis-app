@@ -1,9 +1,13 @@
 import flet as ft
-from utils.ConexionDB import api_client  # Asegúrate de tener la configuración correcta para api_client
+from utils.ConexionDB import api_client
+from utils.global_state import auth_state
 
 def visualizar_entrenamientos(page: ft.Page):
-    entrenamientos_simulados = []  # Lista donde almacenaremos los entrenamientos filtrados
-    user_id = page.user_id  # Asumimos que el ID del usuario está disponible en page.user_id
+    user_id = auth_state.user.get("localId") if auth_state.user else None
+    if not user_id:
+        # optionally guard: force‐logout or redirect to login
+        page.go("/login")
+        return ft.Container() # Asumimos que el ID del usuario está disponible en page.user_id
 
     # Función para crear tarjeta de entrenamiento
     def crear_card_entrenamiento(entrenamiento):
@@ -76,7 +80,7 @@ def visualizar_entrenamientos(page: ft.Page):
             return []
 
     def go_back(page):
-        page.go("/admin_menu")
+        page.go("/user_menu")
 
     # Función para cargar los entrenamientos
     entrenamientos_existentes = obtener_entrenamientos_inscritos()

@@ -78,7 +78,7 @@ def gestionar_pagos_user_view(page: ft.Page):
         icon_color=ft.Colors.BLUE_400,
         icon_size=20,
         tooltip="Volver",
-        on_click=lambda e: page.go("/admin_menu")
+        on_click=lambda e: page.go("/user_menu"),
     )
     toolbar_left = ft.Row(
         controls=[btn_volver],

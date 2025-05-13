@@ -19,6 +19,12 @@ def trainer_menu_view(page: ft.Page):
         content=ft.Column(
             controls=[
                 ft.ElevatedButton(
+                    text="Visualizar Entrenamientos",
+                    width=250,
+                    on_click=lambda _: page.go("/trainer_trainings"),
+                ),
+                
+                ft.ElevatedButton(
                     text="Visualizar Torneos",
                     width=250,
                     on_click=lambda _: page.go("/visualizar_torneos")

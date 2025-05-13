@@ -239,7 +239,7 @@ def user_tournaments(page: ft.Page):
         icon=ft.Icons.ARROW_BACK,
         icon_color=ft.Colors.BLUE_600,
         tooltip="Volver",
-        on_click=lambda e: page.go("/"),
+        on_click=lambda e: page.go("/user_menu")
     )
     search_field = ft.TextField(
         hint_text="Filtrar por nombre de torneo",
@@ -277,12 +277,7 @@ def user_tournaments(page: ft.Page):
     return ft.Container(
         expand=True,
         content=ft.Column([
-            ft.AppBar(
-                title=ft.Text("Torneos Disponibles", weight="bold"),
-                bgcolor=ft.Colors.BLUE_400,
-                color=ft.Colors.WHITE,
-                actions=[toolbar]
-            ),
+            toolbar,
             grid
         ]),
         gradient=ft.LinearGradient(colors=[ft.Colors.WHITE, ft.Colors.BLUE_100]),

@@ -291,12 +291,6 @@ def admin_menu_view(page: ft.Page):
                 ),
                 
                 ft.ElevatedButton(
-                    text="Gestionar Pagos (Usuario)",
-                    width=250,
-                    on_click=lambda _: page.go("/gestionar_pagos_user")
-                ),
-                
-                ft.ElevatedButton(
                     text="Visualizar Entrenamientos",
                     width=250,
                     on_click=lambda _: page.go("/visualizar_entrenamientos")
