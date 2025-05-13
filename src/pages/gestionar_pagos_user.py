@@ -3,16 +3,18 @@ from models.Payment import Payment  # Ajusta la ruta según tu estructura de car
 from utils.ConexionDB import api_client
 from utils.global_state import auth_state
 from datetime import datetime
+import asyncio  # al principio del archivo
 
 
 
 
 def gestionar_pagos_user_view(page: ft.Page):
 
-    def getPagos():
+    async def getPagos():
         """Se piden los pagos de la persona mediante su id y se cargan en el gridView"""
+        await asyncio.sleep(0.1)  # Espera a que la vista esté completamente cargada
         pagosUsuario = [] # en este arreglo se cargarán los objetos tipo Payment del usuario
-
+        print('Consiguiendo id y pagos')
         dlg_aviso = ft.AlertDialog(
             modal=True,
             title=ft.Text("Aviso"),
@@ -23,7 +25,9 @@ def gestionar_pagos_user_view(page: ft.Page):
             actions_alignment=ft.MainAxisAlignment.END)
         
         try:
-            pagos = api_client.get(f"pagos/usuario/{auth_state.user}")
+            
+            id = getId()
+            pagos = api_client.get(f"pagos/usuario/{id}")
             print(pagos)
             for pago in pagos:
                 pagosUsuario.append(Payment(pago["id"],pago["personalID"], float(pago["monto"]), datetime.strptime(pago['fecha'], '%Y-%m-%d') , pago["estado"]))
@@ -36,6 +40,11 @@ def gestionar_pagos_user_view(page: ft.Page):
             grid_pagos.update()
             
 
+    def getId():
+        personas = api_client.get(f"personas/uid/{auth_state.user.get("localId")}")
+        persona  = personas[0] if isinstance(personas, list) else personas
+        id = persona.get("id")
+        return id
     def crear_card_pago(pago: Payment):
         """ retorna la tarjeta de un pago """
         return ft.Card(
@@ -115,6 +124,9 @@ def gestionar_pagos_user_view(page: ft.Page):
         expand=True,
         padding=20,
     )
+
+    page.run_task(getPagos)
+
 
     return gestionar_pagos_user_container
 
