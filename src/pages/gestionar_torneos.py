@@ -604,11 +604,7 @@ def gestionar_torneos(page: ft.Page):
 
     # UI Components
     def go_back(page):
-        if hasattr(page, "on_back"):
-            page.on_back()
-        else:
-            page.clean()
-            page.update()
+        page.go("/admin_menu")
             
     btn_volver = ft.IconButton(
         icon=ft.Icons.ARROW_BACK,
