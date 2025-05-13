@@ -99,6 +99,19 @@ def add_user_info_view(page: ft.Page):
             ft.dropdown.Option("Profesional")
         ]
     )
+    # Campo adicional para correo del padre (oculto por defecto)
+    txt_email_padre = ft.TextField(
+        label="Correo del padre o acudiente",
+        width=300,
+        height=40,
+        border="underline",
+        color="black",
+        visible=False,  # Oculto inicialmente
+        label_style=ft.TextStyle(color=ft.Colors.BLUE_GREY_500),
+        content_padding=ft.padding.only(bottom=15),
+        prefix_icon=ft.Icons.EMAIL
+    )
+
     
     # Función para mostrar un diálogo de información usando page.open(dlg)
     def show_dialog(message, on_close=None):
@@ -126,7 +139,16 @@ def add_user_info_view(page: ft.Page):
         
         def handle_date_change(e):
             if e.control.value:
-                txt_fecha_nacimiento.value = e.control.value.strftime("%d/%m/%Y")
+                selected_date = e.control.value
+                txt_fecha_nacimiento.value = selected_date.strftime("%d/%m/%Y")
+
+                # Calcular edad
+                today = datetime.date.today()
+                age = today.year - selected_date.year - ((today.month, today.day) < (selected_date.month, selected_date.day))
+
+                # Mostrar u ocultar campo de correo del padre
+                txt_email_padre.visible = age < 18
+                txt_email_padre.value = ""
                 page.update()
         
         dp = ft.DatePicker(
@@ -217,9 +239,6 @@ def add_user_info_view(page: ft.Page):
         rol = "Usuario"
         estado = "registrado"
 
-        # Activa el spinner de carga
-        spinner.visible = True
-        page.update()
         
         data = {
             "nombre": nombre,
@@ -231,8 +250,23 @@ def add_user_info_view(page: ft.Page):
             "categoria": categoria,
             "estado": estado,
             "rol": rol,
-            "uid": uid
+            "uid": uid,
         }
+        
+        # Validar correo del padre si es menor de edad
+        if age < 18:
+            email_padre = txt_email_padre.value.strip()
+            if not email_padre:
+                show_dialog("Por favor ingresa el correo del padre o acudiente.")
+                return
+            if not email_pattern.fullmatch(email_padre):
+                show_dialog("El correo del padre o acudiente no es válido.")
+                return
+            data["emailPadre"] = email_padre
+        
+        # Activa el spinner de carga
+        spinner.visible = True
+        page.update()
         
         try:
             api_client.post("personas", data=data)
@@ -277,6 +311,7 @@ def add_user_info_view(page: ft.Page):
                 ft.Container(txt_direccion, padding=ft.padding.only(10)),
                 ft.Container(txt_email, padding=ft.padding.only(10)),
                 ft.Container(dropdown_categoria, padding=ft.padding.only(10)),
+                ft.Container(txt_email_padre, padding=ft.padding.only(10)),
                 ft.Container(
                     ft.ElevatedButton(
                         text="Guardar",
