@@ -138,7 +138,7 @@ def gestionar_pagos_view(page: ft.Page):
         if lista[0].strip() == '':
             page.open(generar_alerta("Error", "Debe ingresar un ID"))
             return
-        if lista[1].strip() == '' or not pattern.match(lista[0].strip()):
+        if lista[1].strip() == '' or not pattern.match(lista[1].strip()):
             page.open(generar_alerta("Error", "Debe ingresar un monto válido"))
             return
         if lista[2].strip() == '':
