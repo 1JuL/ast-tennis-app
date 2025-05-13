@@ -247,6 +247,43 @@ def logout(page: ft.Page):
 
 def admin_menu_view(page: ft.Page):
     
+    def delete_person(person_id):
+        def on_confirm(e):
+            try:
+                api_client.delete(f"personas/{person_id}")
+                dlg.open = False
+                page.update()
+                load_persons()
+            except Exception as ex:
+                show_dialog(page, f"Error al eliminar: {ex}")
+
+        def cancel_dialog(e):
+            dlg.open = False
+            page.update()
+
+        dlg = ft.AlertDialog(
+            title=ft.Text("Confirmar eliminación"),
+            content=ft.Text("¿Estás seguro de que deseas eliminar esta persona?"),
+            actions=[
+                ft.TextButton("Cancelar", on_click=cancel_dialog),
+                ft.TextButton("Eliminar", on_click=on_confirm),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END
+        )
+        page.open(dlg)
+        page.update()
+    
+    # 2) Carga / recarga de personas
+    def load_persons():
+        try:
+            persons = api_client.get("personas") or []
+        except:
+            persons = []
+        grid.controls.clear()
+        for person in persons:
+            grid.controls.append(person_card(person))
+        page.update()
+    
     # Función para mostrar los detalles de una persona en un diálogo
     def show_person_details(person):
         details = (
@@ -345,7 +382,7 @@ def admin_menu_view(page: ft.Page):
                                     width=120,
                                     bgcolor=ft.Colors.RED,
                                     color=ft.Colors.WHITE,
-                                    on_click=lambda e, p=person: print("Eliminar", p)
+                                    on_click=lambda e, pid=person["id"]: delete_person(pid)
                                 )
                             ],
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN
