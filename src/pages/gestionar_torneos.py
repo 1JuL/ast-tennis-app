@@ -232,16 +232,19 @@ def gestionar_torneos(page: ft.Page):
         podio_text = []
         if podio.get('primero'):
             participante = next((p for p in obtener_participantes_autorizados(torneo['id']) if p['personaUid'] == podio['primero']), None)
-            nombre = participante['persona'].get('nombre', 'Desconocido') if participante else "Desconocido"
-            podio_text.append(f"1º: {nombre}")
+            nombre = "Desconocido" if not participante or not participante.get('persona') else participante['persona'].get('nombre', 'Desconocido')
+            apellido = "Desconocido" if not participante or not participante.get('persona') else participante['persona'].get('apellido', 'Desconocido')
+            podio_text.append(f"1º: {nombre} {apellido}")
         if podio.get('segundo'):
             participante = next((p for p in obtener_participantes_autorizados(torneo['id']) if p['personaUid'] == podio['segundo']), None)
-            nombre = participante['persona'].get('nombre', 'Desconocido') if participante else "Desconocido"
-            podio_text.append(f"2º: {nombre}")
+            nombre = "Desconocido" if not participante or not participante.get('persona') else participante['persona'].get('nombre', 'Desconocido')
+            apellido = "Desconocido" if not participante or not participante.get('persona') else participante['persona'].get('apellido', 'Desconocido')
+            podio_text.append(f"2º: {nombre} {apellido}")
         if podio.get('tercero'):
             participante = next((p for p in obtener_participantes_autorizados(torneo['id']) if p['personaUid'] == podio['tercero']), None)
-            nombre = participante['persona'].get('nombre', 'Desconocido') if participante else "Desconocido"
-            podio_text.append(f"3º: {nombre}")
+            nombre = "Desconocido" if not participante or not participante.get('persona') else participante['persona'].get('nombre', 'Desconocido')
+            apellido = "Desconocido" if not participante or not participante.get('persona') else participante['persona'].get('apellido', 'Desconocido')
+            podio_text.append(f"3º: {nombre} {apellido}")
 
         content = [
             ft.Text(torneo["nombre"], size=20, weight="bold"),
@@ -252,11 +255,9 @@ def gestionar_torneos(page: ft.Page):
         ]
 
         if podio_text:
-            # 1) Podio label...
             content.append(
                 ft.Text("Podio:", weight="bold", color=ft.Colors.PURPLE_800)
             )
-            # 2) Single row containing all podium entries side‑by‑side
             content.append(
                 ft.Row(
                     controls=[
@@ -264,7 +265,7 @@ def gestionar_torneos(page: ft.Page):
                         for linea in podio_text
                     ],
                     alignment=ft.MainAxisAlignment.CENTER,
-                    spacing=20,  # adjust spacing as you like
+                    spacing=20,
                 )
             )
 
@@ -280,19 +281,18 @@ def gestionar_torneos(page: ft.Page):
         return ft.Card(
             elevation=3,
             width=300,
-             # wrap content in a container that expands and centers its child
             content=ft.Container(
-                expand=True,                                    # fill the card
-                alignment=ft.alignment.center,                  # center the Column
+                expand=True,
+                alignment=ft.alignment.center,
                 padding=20,
                 bgcolor=ft.Colors.WHITE,
                 border_radius=8,
                 shadow=ft.BoxShadow(blur_radius=10, color=ft.Colors.BLACK12),
                 content=ft.Column(
-                    controls=content,                          # your list of Text/Row
+                    controls=content,
                     spacing=20,
-                    alignment=ft.MainAxisAlignment.CENTER,     # center vertically
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER  # center horizontally
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER
                 )
             )
         )
