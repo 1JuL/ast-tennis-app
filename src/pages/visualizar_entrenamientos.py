@@ -5,25 +5,16 @@ from utils.global_state import auth_state
 def visualizar_entrenamientos(page: ft.Page):
     user_id = auth_state.user.get("localId") if auth_state.user else None
     if not user_id:
-        # optionally guard: force‐logout or redirect to login
         page.go("/login")
-        return ft.Container() # Asumimos que el ID del usuario está disponible en page.user_id
+        return ft.Container()
 
     # Función para crear tarjeta de entrenamiento
     def crear_card_entrenamiento(entrenamiento):
-        # Obtener el profesor ID del entrenamiento
         profesor_id = entrenamiento.get('profesorID')
-
-        # Buscar el nombre del profesor usando el profesorID
         profesor = "Desconocido"
         if profesor_id:
-            # Buscar el profesor en la lista de personas usando su ID
             profesor = obtener_nombre_profesor_por_id(profesor_id)
-
-        # Obtener la hora final (usamos .get() para evitar KeyError)
         hora_final = entrenamiento.get('horaFinal', 'No definida')
-
-        # Crear los botones de Modificar y Eliminar
         return ft.Card(
             content=ft.Container(
                 content=ft.Column(
@@ -31,7 +22,7 @@ def visualizar_entrenamientos(page: ft.Page):
                         ft.Text(entrenamiento["nombre"], size=20, weight="bold"),
                         ft.Text(f"Fecha: {entrenamiento['fecha']}"),
                         ft.Text(f"Hora: {entrenamiento['hora']}"),
-                        ft.Text(f"Hora final: {hora_final}"),  # Mostramos hora final
+                        ft.Text(f"Hora final: {hora_final}"),
                         ft.Text(f"Categoría: {entrenamiento['categoria']}"),
                         ft.Text(f"Profesor: {profesor}"),
                     ],
@@ -49,7 +40,7 @@ def visualizar_entrenamientos(page: ft.Page):
     # Función para obtener el nombre del profesor usando el profesorID
     def obtener_nombre_profesor_por_id(profesor_id):
         try:
-            response = api_client.get(f"personas/{profesor_id}")  # Obtener profesor por su ID desde la API
+            response = api_client.get(f"personas/{profesor_id}")
             if response:
                 return response.get('nombre', 'Desconocido')
             return "Desconocido"
@@ -57,23 +48,31 @@ def visualizar_entrenamientos(page: ft.Page):
             print(f"Error al obtener el profesor: {e}")
             return "Desconocido"
 
+    # Función para verificar si el usuario está inscrito en un evento
+    def is_user_inscribed(evento_id):
+        try:
+            response = api_client.get("personasEventos", params={"eventoId": evento_id})
+            if not response:
+                return False
+            return any(item.get("personaUid") == user_id for item in response)
+        except Exception as e:
+            print(f"Error al verificar inscripción para evento {evento_id}: {e}")
+            return False
+
     # Función para obtener los entrenamientos en los que el usuario está inscrito
     def obtener_entrenamientos_inscritos():
         try:
-            # Obtener los eventos en los que el usuario está inscrito
-            response = api_client.get("personasEventos", params={"personaUid": user_id})
-            if not response:
-                return []
-
-            # Extraer los IDs de los eventos en los que el usuario está inscrito
-            evento_ids = [item["eventoId"] for item in response if item.get("asistencia", False)]
-
-            # Obtener todos los eventos y filtrar por los IDs de los eventos inscritos y tipo 2
+            print(f"Obteniendo todos los eventos para usuario {user_id}")
+            # Obtener todos los eventos
             all_events = api_client.get("eventos") or []
-            entrenamientos = [
-                evento for evento in all_events
-                if evento.get('tipo') == 2 and evento.get('id') in evento_ids
-            ]
+
+            # Filtrar eventos de tipo 2 y verificar inscripción del usuario
+            entrenamientos = []
+            for evento in all_events:
+                if evento.get('tipo') == 2:
+                    if is_user_inscribed(evento.get('id')):
+                        entrenamientos.append(evento)
+            print(f"Entrenamientos encontrados: {entrenamientos}")
             return entrenamientos
         except Exception as e:
             print(f"Error al obtener los entrenamientos inscritos: {e}")
@@ -82,10 +81,10 @@ def visualizar_entrenamientos(page: ft.Page):
     def go_back(page):
         page.go("/user_menu")
 
-    # Función para cargar los entrenamientos
+    # Cargar los entrenamientos
     entrenamientos_existentes = obtener_entrenamientos_inscritos()
 
-    # Crear las tarjetas con los entrenamientos inscritos
+    # Crear las tarjetas
     grid_entrenamientos = ft.GridView(
         expand=True,
         max_extent=250,
@@ -104,8 +103,6 @@ def visualizar_entrenamientos(page: ft.Page):
             entrenamiento for entrenamiento in entrenamientos_existentes
             if filtro in entrenamiento["nombre"].lower()
         ]
-
-        # Limpiar y agregar tarjetas filtradas
         grid_entrenamientos.controls.clear()
         for entrenamiento in filtered_entrenamientos:
             grid_entrenamientos.controls.append(crear_card_entrenamiento(entrenamiento))
@@ -122,8 +119,8 @@ def visualizar_entrenamientos(page: ft.Page):
     search_field = ft.TextField(
         hint_text="Filtrar por nombre de entrenamiento",
         width=300,
-        color=ft.Colors.BLACK,  # color del texto ingresado
-        hint_style=ft.TextStyle(color=ft.Colors.BLACK54),  # color del placeholder
+        color=ft.Colors.BLACK,
+        hint_style=ft.TextStyle(color=ft.Colors.BLACK54),
     )
 
     btn_buscar = ft.ElevatedButton("Buscar", on_click=buscar_entrenamientos)
