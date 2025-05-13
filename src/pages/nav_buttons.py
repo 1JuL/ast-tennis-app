@@ -7,7 +7,7 @@ from pages.gestionar_torneos import Gestionar_torneos
 from pages.add_user_info import Add_user_info
 from pages.gestionar_pagos_user import Gestionar_pagos_user
 from pages.trainer_trainings import Trainer_trainings
-
+from pages.user_tournaments import User_tournaments
 def nav_buttons(page: ft.Page):
 
     nav = ft.Container(
@@ -18,6 +18,12 @@ def nav_buttons(page: ft.Page):
                     width=250,
                     bgcolor=ft.Colors.BLACK,
                     on_click=lambda e: page.go("/gestionar_pagos")
+                ),
+                ft.ElevatedButton(
+                    text="Usuario Torneos",
+                    width=250,
+                    bgcolor=ft.Colors.BLACK,
+                    on_click=lambda e: page.go("/user_tournaments")
                 ),
                 ft.ElevatedButton(
                     text="Profesor Entrenamientos",

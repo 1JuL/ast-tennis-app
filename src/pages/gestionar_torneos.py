@@ -43,6 +43,63 @@ def gestionar_torneos(page: ft.Page):
             show_error_popup(f"Error al obtener los profesores: {e}")
             return []
 
+    # Fetch participants for a tournament
+    def obtener_participantes_torneo(torneo_id):
+        try:
+            response = api_client.get("personasEventos", params={"eventoId": torneo_id})
+            return response if response else []
+        except Exception as e:
+            show_error_popup(f"Error al obtener participantes: {e}")
+            return []
+
+    # Update participant's authorization status
+    def actualizar_autorizacion(participante_id, asistencia):
+        try:
+            response = api_client.put(
+                f"personasEventos/{participante_id}",
+                data={"asistencia": asistencia}
+            )
+            page.snack_bar = ft.SnackBar(ft.Text("Autorización actualizada"), bgcolor=ft.Colors.GREEN_600)
+            page.snack_bar.open = True
+            page.update()
+        except requests.exceptions.HTTPError as e:
+            show_error_popup(f"Error al actualizar autorización: {e.response.status_code}")
+        except Exception as e:
+            show_error_popup(f"Error al actualizar autorización: {e}")
+
+    # Show dialog to manage participants
+    def mostrar_participantes(torneo):
+        participantes = obtener_participantes_torneo(torneo['id'])
+        lista = ft.ListView(expand=True, spacing=10, padding=10)
+
+        if not participantes:
+            lista.controls.append(ft.Text("No hay participantes inscritos", italic=True, color=ft.Colors.GREY_600))
+        else:
+            for participante in participantes:
+                lista.controls.append(
+                    ft.ListTile(
+                        title=ft.Text(
+                            f"{participante.get('persona', {}).get('nombre', 'Desconocido')} {participante.get('persona', {}).get('apellido', '')}",
+                            weight="bold"
+                        ),
+                        trailing=ft.Switch(
+                            value=participante.get('asistencia', False),
+                            on_change=lambda e, pid=participante['id']: actualizar_autorizacion(pid, e.control.value)
+                        )
+                    )
+                )
+
+        dialog = ft.AlertDialog(
+            title=ft.Text(f"Participantes: {torneo['nombre']}"),
+            content=ft.Container(content=lista, height=300, width=400, bgcolor=ft.Colors.WHITE),
+            actions=[
+                ft.TextButton("Cerrar", on_click=lambda e: cerrar_dialogo(dialog), style=ft.ButtonStyle(color=ft.Colors.BLUE_700))
+            ],
+            actions_alignment=ft.MainAxisAlignment.END
+        )
+        page.open(dialog)
+        page.update()
+
     # Create tournament card
     def crear_card_torneo(torneo):
         profesor = "Sin profesor"  # Since profesorID is always 0 for tournaments
@@ -58,6 +115,12 @@ def gestionar_torneos(page: ft.Page):
             color=ft.Colors.WHITE,
             bgcolor=ft.Colors.RED_700
         )
+        btn_participantes = ft.ElevatedButton(
+            "Gestionar Participantes",
+            on_click=lambda e: mostrar_participantes(torneo),
+            color=ft.Colors.WHITE,
+            bgcolor=ft.Colors.BLUE_600
+        )
 
         return ft.Card(
             content=ft.Container(
@@ -67,8 +130,14 @@ def gestionar_torneos(page: ft.Page):
                         ft.Text(f"Fecha: {torneo['fecha']}"),
                         ft.Text(f"Hora: {torneo['hora']}"),
                         ft.Text(f"Categoría: {torneo['categoria']}"),
-                        
-                        ft.Row([btn_modificar, btn_eliminar], spacing=10, alignment=ft.MainAxisAlignment.CENTER)
+                        ft.Text(f"Capacidad: {torneo.get('num_personas', 'No especificado')}"),
+
+                        ft.Row(
+                            [btn_modificar, btn_eliminar, btn_participantes],
+                            spacing=10,
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            wrap=True
+                        )
                     ],
                     spacing=10
                 ),
@@ -158,7 +227,6 @@ def gestionar_torneos(page: ft.Page):
             if not selected_date.value:
                 show_error_popup("Debe seleccionar una fecha.")
                 return
-            #la fecha es igual o superior a la fecha actual
             try:
                 fecha = datetime.datetime.strptime(selected_date.value, '%Y-%m-%d').date()
                 if fecha < datetime.date.today():
@@ -167,7 +235,6 @@ def gestionar_torneos(page: ft.Page):
             except ValueError:
                 show_error_popup("Formato de fecha inválido.")
                 return
-            #la fecha es menor a un año
             if fecha > datetime.date.today() + datetime.timedelta(days=365):
                 show_error_popup("La fecha debe ser menor a un año.")
                 return
@@ -188,8 +255,7 @@ def gestionar_torneos(page: ft.Page):
                     "profesorID": 0,
                     "podio": 0,
                     "num_personas": int(cupos_field.value)
-                    
-}
+                }
 
                 api_client.post("eventos", torneo_data)
                 grid_torneos.controls.clear()
@@ -242,7 +308,7 @@ def gestionar_torneos(page: ft.Page):
 
     # Edit tournament form
     def mostrar_formulario_editar(torneo):
-        required_keys = ["id", "nombre","num_personas", "categoria", "fecha", "hora"]
+        required_keys = ["id", "nombre", "num_personas", "categoria", "fecha", "hora"]
         missing_keys = [key for key in required_keys if key not in torneo]
         if missing_keys:
             show_error_popup(f"Faltan datos en el torneo: {missing_keys}")
@@ -337,7 +403,6 @@ def gestionar_torneos(page: ft.Page):
                     "profesorID": 0,
                     "podio": 0,
                     "num_personas": int(cupose_field.value)
-                    
                 }
 
                 api_client.put(f"eventos/{torneo_data['id']}", torneo_data)
@@ -360,6 +425,7 @@ def gestionar_torneos(page: ft.Page):
             content=ft.Column(
                 [
                     nombree_field,
+                    cupose_field,
                     categoriae_field,
                     ft.Row([
                         ft.Text("Fecha:"),
@@ -398,6 +464,10 @@ def gestionar_torneos(page: ft.Page):
             page.update()
         except Exception as e:
             show_error_popup(f"Error al eliminar el torneo: {e}")
+
+    def cerrar_dialogo(dialog):
+        dialog.open = False
+        page.update()
 
     # Initialize data
     profesores = obtener_profesores()
@@ -494,4 +564,4 @@ def gestionar_torneos(page: ft.Page):
     )
 
 Gestionar_torneos = gestionar_torneos
-_all_ = ["gestionar_torneos"]
+__all__ = ["gestionar_torneos"]
