@@ -41,7 +41,7 @@ def user_tournaments(page: ft.Page):
     user_categoria = user_data_complete.get('categoria')
     print(f"User Categoria: {user_categoria}")  # Depuración
 
-    # Función para mostrar errores
+    # Función para mostrar errores (solo para error 500)
     def show_error_popup(message):
         def close_popup(e):
             page.close(error_dialog)
@@ -66,7 +66,9 @@ def user_tournaments(page: ft.Page):
             print(f"Torneos obtenidos: {torneos}")  # Depuración
             return torneos
         except Exception as e:
-            show_error_popup(f"Error al obtener torneos: {e}")
+            page.snack_bar = ft.SnackBar(ft.Text(f"Error al obtener torneos: {e}"), bgcolor=ft.Colors.RED_600)
+            page.snack_bar.open = True
+            page.update()
             return []
 
     # Obtener inscripciones del usuario
@@ -76,17 +78,17 @@ def user_tournaments(page: ft.Page):
             print(f"Respuesta de la API para inscripciones del usuario: {response}")  # Depuración
             return [inscripcion for inscripcion in response if inscripcion.get('personaUid') == user_uid]
         except Exception as e:
-            show_error_popup(f"Error al obtener inscripciones: {e}")
+            page.snack_bar = ft.SnackBar(ft.Text(f"Error al obtener inscripciones: {e}"), bgcolor=ft.Colors.RED_600)
+            page.snack_bar.open = True
+            page.update()
             return []
 
     # Obtener número de inscritos (solo asistencia: true)
     def obtener_inscritos_autorizados(torneo_id):
         try:
-            # Intentar filtrar por asistencia: true en la API
             response = api_client.get("personasEventos", params={"eventoId": torneo_id, "asistencia": "true"})
             print(f"Respuesta de la API para inscritos autorizados (filtrado por asistencia=true): {response}")  # Depuración
 
-            # Filtrado manual como respaldo
             if response:
                 inscritos = [inscripcion for inscripcion in response if inscripcion.get('asistencia') in [True, "true"]]
                 print(f"Inscritos autorizados después de filtrado manual para torneo {torneo_id}: {inscritos}")  # Depuración
@@ -95,7 +97,9 @@ def user_tournaments(page: ft.Page):
                 print(f"No se encontraron inscritos para torneo {torneo_id}")
                 return 0
         except Exception as e:
-            show_error_popup(f"Error al obtener inscritos: {e}")
+            page.snack_bar = ft.SnackBar(ft.Text(f"Error al obtener inscritos: {e}"), bgcolor=ft.Colors.RED_600)
+            page.snack_bar.open = True
+            page.update()
             return 0
 
     # Inscribir al usuario en un torneo
@@ -105,11 +109,15 @@ def user_tournaments(page: ft.Page):
             inscritos = obtener_inscritos_autorizados(torneo_id)
             torneo = next((t for t in torneos if t['id'] == torneo_id), None)
             if not torneo:
-                show_error_popup("Torneo no encontrado.")
+                page.snack_bar = ft.SnackBar(ft.Text("Torneo no encontrado."), bgcolor=ft.Colors.RED_600)
+                page.snack_bar.open = True
+                page.update()
                 return False
 
             if inscritos >= torneo['num_personas']:
-                show_error_popup("El torneo ha alcanzado su capacidad máxima.")
+                page.snack_bar = ft.SnackBar(ft.Text("El torneo ha alcanzado su capacidad máxima."), bgcolor=ft.Colors.RED_600)
+                page.snack_bar.open = True
+                page.update()
                 return False
 
             # Inscribir con asistencia: false (en espera)
@@ -123,10 +131,17 @@ def user_tournaments(page: ft.Page):
             actualizar_vista()  # Forzar actualización de la vista después de la inscripción
             return True
         except requests.exceptions.HTTPError as e:
-            show_error_popup(f"Error al inscribirse: {e.response.status_code}")
+            if e.response.status_code == 500:
+                show_error_popup("El usuario ya está inscrito.")
+            else:
+                page.snack_bar = ft.SnackBar(ft.Text(f"Error al inscribirse: {e.response.status_code}"), bgcolor=ft.Colors.RED_600)
+                page.snack_bar.open = True
+                page.update()
             return False
         except Exception as e:
-            show_error_popup(f"Error al inscribirse: {e}")
+            page.snack_bar = ft.SnackBar(ft.Text(f"Error al inscribirse: {e}"), bgcolor=ft.Colors.RED_600)
+            page.snack_bar.open = True
+            page.update()
             return False
 
     # Desinscribirse de un torneo
@@ -139,10 +154,14 @@ def user_tournaments(page: ft.Page):
             actualizar_vista()  # Forzar actualización de la vista después de desinscribirse
             return True
         except requests.exceptions.HTTPError as e:
-            show_error_popup(f"Error al desinscribirse: {e.response.status_code}")
+            page.snack_bar = ft.SnackBar(ft.Text(f"Error al desinscribirse: {e.response.status_code}"), bgcolor=ft.Colors.RED_600)
+            page.snack_bar.open = True
+            page.update()
             return False
         except Exception as e:
-            show_error_popup(f"Error al desinscribirse: {e}")
+            page.snack_bar = ft.SnackBar(ft.Text(f"Error al desinscribirse: {e}"), bgcolor=ft.Colors.RED_600)
+            page.snack_bar.open = True
+            page.update()
             return False
 
     # Crear tarjeta de torneo para el usuario
@@ -163,13 +182,14 @@ def user_tournaments(page: ft.Page):
                 # Autorizado (asistencia: true)
                 estado = ft.Text("Admitido: Sí", color=ft.Colors.GREEN_700)
                 botones = ft.Row([
+                    ft.Text("Cupo confirmado", color=ft.Colors.GREEN_700, weight="bold"),
                     ft.ElevatedButton(
                         "Desinscribirse",
                         on_click=lambda e: desinscribirse_torneo(inscripcion['id']),
                         bgcolor=ft.Colors.RED_600,
                         color=ft.Colors.WHITE
                     )
-                ], alignment=ft.MainAxisAlignment.CENTER)
+                ], alignment=ft.MainAxisAlignment.CENTER, spacing=10)
             else:
                 # En espera de autorización (asistencia: false)
                 estado = ft.Text("Admitido: No", color=ft.Colors.ORANGE_700)
