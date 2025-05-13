@@ -52,9 +52,11 @@ def gestionar_entrenamientos(page: ft.Page):
 
     def is_valid_time_range(start_time, end_time):
         try:
-            start = datetime.datetime.strptime(start_time, '%H:%M')
-            end = datetime.datetime.strptime(end_time, '%H:%M')
-            return end > start
+            start = datetime.datetime.strptime(start_time, '%H:%M').time()
+            end = datetime.datetime.strptime(end_time, '%H:%M').time()
+            start_dt = datetime.datetime.combine(datetime.date.today(), start)
+            end_dt = datetime.datetime.combine(datetime.date.today(), end)
+            return end_dt > start_dt
         except ValueError:
             return False
 
@@ -75,9 +77,9 @@ def gestionar_entrenamientos(page: ft.Page):
                 ft.dropdown.Option("Profesional")
             ]
         )
-        selected_date = ft.Text()
-        selected_start_time = ft.Text()
-        selected_end_time = ft.Text()
+        selected_date = ft.Text(value="")
+        selected_start_time = ft.Text(value="")
+        selected_end_time = ft.Text(value="")
         profesor_field = ft.Dropdown(
             label="Selecciona el nombre del profesor",
             options=[ft.dropdown.Option(profesor['nombre']) for profesor in profesores],
@@ -87,10 +89,10 @@ def gestionar_entrenamientos(page: ft.Page):
         # Date Picker function
         def pick_date(e):
             date_picker = ft.DatePicker(
-                first_date=datetime.date.today() - datetime.timedelta(days=365),
+                first_date=datetime.date.today(),
                 last_date=datetime.date.today() + datetime.timedelta(days=365),
                 on_change=lambda e: [
-                    selected_date._setattr_('value', e.control.value.strftime("%Y-%m-%d")),
+                    selected_date.__setattr__('value', e.control.value.strftime("%Y-%m-%d")),
                     page.update()
                 ]
             )
@@ -101,66 +103,80 @@ def gestionar_entrenamientos(page: ft.Page):
             time_picker = ft.TimePicker(
                 on_change=lambda e: [
                     setattr(selected_start_time, 'value', e.control.value.strftime("%H:%M")),
+                    page.overlay.remove(time_picker),
+                    page.update()
+                ],
+                on_dismiss=lambda e: [
+                    page.overlay.remove(time_picker),
                     page.update()
                 ]
             )
             page.overlay.append(time_picker)
-            time_picker.open = True  # Set the open property to True
+            time_picker.open = True
             page.update()
 
         def pick_end_time(e):
             time_picker = ft.TimePicker(
                 on_change=lambda e: [
                     setattr(selected_end_time, 'value', e.control.value.strftime("%H:%M")),
+                    page.overlay.remove(time_picker),
+                    page.update()
+                ],
+                on_dismiss=lambda e: [
+                    page.overlay.remove(time_picker),
                     page.update()
                 ]
             )
             page.overlay.append(time_picker)
-            time_picker.open = True  # Set the open property to True
+            time_picker.open = True
             page.update()
 
         def guardar_entrenamiento(e):
+            # Validar nombre
             if not nombre_field.value or nombre_field.value.strip() == "":
                 show_error_popup("El nombre del entrenamiento no puede estar vacío o contener solo espacios.")
                 return
-            #Validacion fecha mayor o igual a la fecha actual
-            try:
-                fecha_actual = datetime.date.today()
-                fecha_seleccionada = datetime.datetime.strptime(selected_date.value, "%Y-%m-%d").date()
-                if fecha_seleccionada < fecha_actual:
-                    show_error_popup("La fecha seleccionada no puede ser anterior a la fecha actual.")
-                    return
-            except ValueError:
-                show_error_popup("Formato de fecha no válido.")
-                return
-            #Validacion fecha no superorior a 1 año
-            try:
-                fecha_seleccionada = datetime.datetime.strptime(selected_date.value, "%Y-%m-%d").date()
-                fecha_maxima = fecha_actual + datetime.timedelta(days=365)
-                if fecha_seleccionada > fecha_maxima:
-                    show_error_popup("La fecha seleccionada no puede ser superior a un año.")
-                    return
-            except ValueError:
-                show_error_popup("Formato de fecha no válido.")
-                return
+            
+            # Validar categoría
             if not categoria_field.value:
                 show_error_popup("Debe seleccionar una categoría.")
                 return
 
+            # Validar fecha seleccionada
             if not selected_date.value:
                 show_error_popup("Debe seleccionar una fecha.")
                 return
 
+            try:
+                fecha_seleccionada = datetime.datetime.strptime(selected_date.value, "%Y-%m-%d").date()
+                fecha_actual = datetime.date.today()
+                # Validar que la fecha no sea anterior a hoy
+                if fecha_seleccionada < fecha_actual:
+                    show_error_popup("La fecha seleccionada no puede ser anterior a la fecha actual.")
+                    return
+                # Validar que la fecha no sea superior a un año
+                fecha_maxima = fecha_actual + datetime.timedelta(days=365)
+                if fecha_seleccionada > fecha_maxima:
+                    show_error_popup("La fecha seleccionada no puede ser superior a un año desde hoy.")
+                    return
+            except ValueError as ve:
+                show_error_popup(f"Formato de fecha no válido: {ve}")
+                return
+
+            # Validar horas
             if not selected_start_time.value:
                 show_error_popup("Debe seleccionar una hora de inicio.")
                 return
             if not selected_end_time.value:
                 show_error_popup("Debe seleccionar una hora de finalización.")
                 return
+
+            # Validar que la hora final sea mayor que la hora inicial
             if not is_valid_time_range(selected_start_time.value, selected_end_time.value):
                 show_error_popup("La hora final debe ser posterior a la hora inicial.")
                 return
 
+            # Validar profesor
             if not profesor_field.value:
                 show_error_popup("Debe seleccionar un profesor.")
                 return
@@ -308,7 +324,7 @@ def gestionar_entrenamientos(page: ft.Page):
                     initial_date = datetime.date.today()
                 date_picker = ft.DatePicker(
                     value=initial_date,
-                    first_date=datetime.date.today() - datetime.timedelta(days=365),
+                    first_date=datetime.date.today(),
                     last_date=datetime.date.today() + datetime.timedelta(days=365),
                     on_change=lambda e: [
                         setattr(selected_date_editar, 'value', e.control.value.strftime("%Y-%m-%d")),
@@ -359,7 +375,7 @@ def gestionar_entrenamientos(page: ft.Page):
                 time_picker.open = True
                 page.update()
 
-            def guardar_edicion(e, entrenamiento_data=entrenamiento):  # Pass entrenamiento explicitly
+            def guardar_edicion(e, entrenamiento_data=entrenamiento):
                 print("Saving edited entrenamiento")  # Debug
                 if not nombree_field.value or nombree_field.value.strip() == "":
                     show_error_popup("El nombre del entrenamiento no puede estar vacío.")
@@ -370,6 +386,20 @@ def gestionar_entrenamientos(page: ft.Page):
                 if not selected_date_editar.value:
                     show_error_popup("Debe seleccionar una fecha.")
                     return
+                try:
+                    fecha_seleccionada = datetime.datetime.strptime(selected_date_editar.value, "%Y-%m-%d").date()
+                    fecha_actual = datetime.date.today()
+                    if fecha_seleccionada < fecha_actual:
+                        show_error_popup("La fecha seleccionada no puede ser anterior a la fecha actual.")
+                        return
+                    fecha_maxima = fecha_actual + datetime.timedelta(days=365)
+                    if fecha_seleccionada > fecha_maxima:
+                        show_error_popup("La fecha seleccionada no puede ser superior a un año desde hoy.")
+                        return
+                except ValueError as ve:
+                    show_error_popup(f"Formato de fecha no válido: {ve}")
+                    return
+
                 if not selected_start_time_editar.value:
                     show_error_popup("Debe seleccionar una hora de inicio.")
                     return
@@ -388,7 +418,7 @@ def gestionar_entrenamientos(page: ft.Page):
                     return
 
                 event_data = {
-                    'id': entrenamiento_data['id'],  # Use entrenamiento_data instead of entrenamiento
+                    'id': entrenamiento_data['id'],
                     'nombre': nombree_field.value.strip(),
                     'categoria': categoriae_field.value,
                     'fecha': selected_date_editar.value,
@@ -404,7 +434,7 @@ def gestionar_entrenamientos(page: ft.Page):
                     response_evento = api_client.put(f"eventos/{entrenamiento_data['id']}", event_data)
                     entrenamientos_existentes = obtener_entrenamientos()
                     grid_entrenamientos.controls.clear()
-                    for evento in entrenamientos_existentes:  # Use a different variable name to avoid shadowing
+                    for evento in entrenamientos_existentes:
                         grid_entrenamientos.controls.append(crear_card_entrenamiento(evento))
                     dlg.open = False
                     page.update()
@@ -448,7 +478,7 @@ def gestionar_entrenamientos(page: ft.Page):
                         ft.Row(
                             [
                                 ft.ElevatedButton("Guardar", 
-                                    on_click=lambda e: guardar_edicion(e, entrenamiento),  # Pass entrenamiento
+                                    on_click=lambda e: guardar_edicion(e, entrenamiento),
                                     color=ft.Colors.WHITE,
                                     bgcolor=ft.Colors.GREEN_700),
                                 ft.ElevatedButton("Cancelar", 
@@ -472,6 +502,7 @@ def gestionar_entrenamientos(page: ft.Page):
         except Exception as err:
             print(f"Error in mostrar_formulario_editar: {err}")
             show_error_popup(f"Error al abrir el formulario de edición: {err}")   
+
     #dar formato a la card de cada entrenamiento
     def crear_card_entrenamiento(entrenamiento):
         profesor_id = entrenamiento.get('profesorID')

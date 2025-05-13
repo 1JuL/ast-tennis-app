@@ -666,7 +666,7 @@ def gestionar_torneos(page: ft.Page):
     )
     grid_torneos = ft.GridView(
         expand=True,
-        max_extent=450,
+        max_extent=550,
         runs_count=3,
         spacing=15,
         run_spacing=15
